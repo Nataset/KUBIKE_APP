@@ -53,9 +53,9 @@ class _LoginPageState extends State<LoginPage> {
             ),
             Expanded(
               child: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     color: Colors.white,
-                    borderRadius: const BorderRadius.only(
+                    borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(30),
                         topRight: Radius.circular(30))),
                 alignment: Alignment.topLeft,
@@ -64,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
+                    const SizedBox(
                       height: 60,
                     ),
                     Text('Hey There,',
@@ -104,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                             )
                           ],
                         )),
-                    SizedBox(
+                    const SizedBox(
                       height: 25,
                     ),
                     Row(children: [
@@ -118,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       Expanded(child: Divider(color: Colors.grey[600])),
                     ]),
-                    SizedBox(
+                    const SizedBox(
                       height: 25,
                     ),
                     OutlinedButton(

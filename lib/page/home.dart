@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:kubike_app/page/login.dart';
 import 'package:kubike_app/page/map.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,7 +16,7 @@ class _HomePageState extends State<HomePage> {
   final screens = [
     MapPage(),
     Center(child: Text('second page')),
-    Center(child: Text('three page')),
+    LoginPage(),
     Center(child: Text('fourth page'))
   ];
 
