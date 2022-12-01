@@ -1,8 +1,17 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:kubike_app/page/bike_borrow.dart';
+import 'package:kubike_app/page/bike_return.dart';
 import 'package:kubike_app/page/login.dart';
 import 'package:kubike_app/page/map.dart';
+import 'package:kubike_app/page/profile.dart';
+import 'package:kubike_app/page/test.dart';
+import 'package:kubike_app/provider/bike_provider.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,12 +22,36 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int index = 0;
-  final screens = [
-    MapPage(),
-    Center(child: Text('second page')),
-    LoginPage(),
-    Center(child: Text('fourth page'))
-  ];
+  late StreamSubscription<bool?>? isBorrowSub;
+  var screens = [MapPage(), BikeBorrowPage(), ProfilePage(), TestPage()];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    final isBorrowStream = context.read<BikeProvider>().getIsBorrowStream();
+
+    isBorrowSub = isBorrowStream.listen((isBorrow) {
+      if (mounted) {
+        if (isBorrow) {
+          setState(() {
+            screens[1] = BikeReturnPage();
+          });
+        } else {
+          setState(() {
+            screens[1] = BikeBorrowPage();
+          });
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    isBorrowSub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

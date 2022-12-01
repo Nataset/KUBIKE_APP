@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -20,25 +21,35 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   List<Hub> _hubs = [];
-  final LatLng _mapDefaultPosition = LatLng(13.844680, 100.571384);
+  late bool _isError = false;
+  final LatLng _mapDefaultPosition = LatLng(13.8478, 100.5725);
   final _mapController = MapController();
 
   @override
   void initState() {
     super.initState();
 
-    HubService.fetchHubs().then((hubs) => setState(() {
-          _hubs = hubs ?? [];
-        }));
+    HubService.fetchHubs().then((hubs) {
+      if (mounted) {
+        if (hubs == null) {
+          setState(() {
+            _isError = true;
+          });
+        } else {
+          setState(() {
+            _hubs = hubs;
+          });
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-
     void showHubsDetail(Hub hub) {
       _mapController.moveAndRotate(
-          LatLng(hub.lon - 0.005, hub.lat - 0.003), 16, -30);
+          LatLng(hub.latitude - 0.005, hub.longitude - 0.003), 16, -30);
 
       showModalBottomSheet<dynamic>(
           isScrollControlled: true,
@@ -84,7 +95,7 @@ class _MapPageState extends State<MapPage> {
                                     color: AppColor.darkGreen),
                               ),
                               Text(
-                                '${hub.lon}, ${hub.lat}',
+                                '${hub.longitude}, ${hub.latitude}',
                                 style: TextStyle(
                                   color: AppColor.green,
                                 ),
@@ -98,7 +109,9 @@ class _MapPageState extends State<MapPage> {
                                   padding: const EdgeInsets.only(
                                       left: 20, top: 10, bottom: 5),
                                   decoration: BoxDecoration(
-                                      color: Colors.grey[300],
+                                      color: hub.available_parking_slot <= 0
+                                          ? Colors.red[100]
+                                          : Colors.grey[300],
                                       borderRadius: const BorderRadius.all(
                                           Radius.circular(20))),
                                   child: Row(
@@ -120,11 +133,15 @@ class _MapPageState extends State<MapPage> {
                                                 fontWeight: FontWeight.w600),
                                           ),
                                           Text(
-                                            '20',
+                                            '${hub.available_parking_slot}',
                                             style: TextStyle(
                                                 fontSize: 30,
                                                 fontWeight: FontWeight.w900,
-                                                color: Colors.green[500]),
+                                                color:
+                                                    hub.available_parking_slot <=
+                                                            0
+                                                        ? Colors.red
+                                                        : Colors.green[500]),
                                           ),
                                         ],
                                       ),
@@ -138,7 +155,9 @@ class _MapPageState extends State<MapPage> {
                                   padding: const EdgeInsets.only(
                                       left: 20, top: 10, bottom: 5),
                                   decoration: BoxDecoration(
-                                      color: AppColor.lightGreen,
+                                      color: hub.available_bike <= 0
+                                          ? Colors.red[100]
+                                          : AppColor.lightGreen,
                                       borderRadius: const BorderRadius.all(
                                           Radius.circular(20))),
                                   child: Row(
@@ -147,10 +166,12 @@ class _MapPageState extends State<MapPage> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.pedal_bike,
                                         size: 50,
-                                        color: Colors.white,
+                                        color: hub.available_bike <= 0
+                                            ? Colors.black
+                                            : Colors.white,
                                       ),
                                       Column(
                                         mainAxisAlignment:
@@ -163,11 +184,13 @@ class _MapPageState extends State<MapPage> {
                                                 fontWeight: FontWeight.w600),
                                           ),
                                           Text(
-                                            '5',
+                                            '${hub.available_bike}',
                                             style: TextStyle(
                                                 fontSize: 30,
                                                 fontWeight: FontWeight.w900,
-                                                color: Colors.green[500]),
+                                                color: hub.available_bike <= 0
+                                                    ? Colors.red
+                                                    : Colors.green[500]),
                                           ),
                                         ],
                                       ),
@@ -201,62 +224,129 @@ class _MapPageState extends State<MapPage> {
               ));
     }
 
-    return FlutterMap(
-      mapController: _mapController,
-      options: MapOptions(
-        center: _mapDefaultPosition,
-        zoom: 15,
-        maxZoom: 18,
-        rotation: -30,
-        keepAlive: true,
-        maxBounds: LatLngBounds(
-          LatLng(13.9, 100.5),
-          LatLng(13.8, 100.6),
-        ),
-      ),
-      nonRotatedChildren: [
-        AttributionWidget.defaultWidget(
-          source: 'OpenStreetMap contributors',
-          onSourceTapped: null,
-        ),
-      ],
+    return Stack(
       children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.app',
-        ),
-        MarkerLayer(
-            markers: _hubs.length > 0
-                ? List<Marker>.generate(
-                    _hubs!.length,
-                    (index) => Marker(
-                          width: 50,
-                          height: 50,
-                          rotate: true,
-                          point: LatLng(_hubs![index].lon, _hubs![index].lat),
-                          builder: (context) => GestureDetector(
-                              onTap: () => showHubsDetail(_hubs[index]),
-                              child: const Icon(
-                                Icons.location_pin,
-                                size: 50,
-                                color: Colors.red,
-                              )),
-                        ))
-                : []),
-        CurrentLocationLayer(
-          centerOnLocationUpdate: CenterOnLocationUpdate.always,
-          turnOnHeadingUpdate: TurnOnHeadingUpdate.never,
-          style: LocationMarkerStyle(
-            marker: const DefaultLocationMarker(
-              child: Icon(
-                Icons.navigation,
-                color: Colors.white,
+        FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            center: _mapDefaultPosition,
+            zoom: 15,
+            maxZoom: 18,
+            rotation: -30,
+            keepAlive: true,
+            maxBounds: LatLngBounds(
+              LatLng(13.9, 100.5),
+              LatLng(13.8, 100.6),
+            ),
+          ),
+          nonRotatedChildren: [
+            AttributionWidget.defaultWidget(
+              source: 'OpenStreetMap contributors',
+              onSourceTapped: null,
+            ),
+          ],
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.example.app',
+            ),
+            CurrentLocationLayer(
+              centerOnLocationUpdate: CenterOnLocationUpdate.never,
+              turnOnHeadingUpdate: TurnOnHeadingUpdate.never,
+              style: LocationMarkerStyle(
+                marker: const DefaultLocationMarker(
+                  child: Icon(
+                    Icons.navigation,
+                    color: Colors.white,
+                  ),
+                ),
+                markerSize: const Size(40, 40),
+                markerDirection: MarkerDirection.heading,
               ),
             ),
-            markerSize: const Size(40, 40),
-            markerDirection: MarkerDirection.heading,
+            MarkerLayer(
+                markers: _hubs.length > 0
+                    ? List<Marker>.generate(
+                        _hubs!.length,
+                        (index) => Marker(
+                              width: 50,
+                              height: 50,
+                              rotate: true,
+                              point: LatLng(_hubs![index].latitude,
+                                  _hubs![index].longitude),
+                              builder: (context) => GestureDetector(
+                                  onTap: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: ((context) => Center(
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 4),
+                                            )));
+
+                                    HubService.fetchHub(
+                                            hubId: _hubs[index].id.toString())
+                                        .then((hub) {
+                                      Navigator.of(context).pop();
+                                      if (hub != null) {
+                                        _hubs[index] = hub;
+                                        showHubsDetail(hub);
+                                      } else {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) =>
+                                                CupertinoAlertDialog(
+                                                  title: Text(
+                                                      'Show Hub Detail Fail'),
+                                                  actions: [
+                                                    CupertinoDialogAction(
+                                                      isDefaultAction: true,
+                                                      child: TextButton(
+                                                        child: Text(
+                                                          'OK',
+                                                          style: TextStyle(
+                                                              color: Colors.red,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                      ),
+                                                    )
+                                                  ],
+                                                ));
+                                      }
+                                    });
+                                  },
+                                  child: const Icon(
+                                    Icons.location_pin,
+                                    size: 50,
+                                    color: Colors.red,
+                                  )),
+                            ))
+                    : []),
+          ],
+        ),
+        if (_hubs.isEmpty && _isError == false)
+          Container(
+            color: Colors.black54,
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 4,
+              ),
+            ),
           ),
-        )
+        if (_isError)
+          Container(
+            color: Colors.black54,
+            child: Center(
+                child: Text(
+              "Can't Connect to the server",
+              style: TextStyle(color: Colors.red, fontSize: 18),
+            )),
+          )
       ],
     );
     ;

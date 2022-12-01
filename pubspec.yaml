@@ -29,6 +29,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  splashscreen: any
 
   # google map
   # flutter_polyline_points: ^1.0.0
@@ -46,6 +47,13 @@ dependencies:
   latlong2: ^0.8.1
   flutter_dotenv: ^5.0.2
   flutter_map_location_marker: ^5.0.0+1
+  flutter_secure_storage: ^6.0.0
+  google_fonts: ^3.0.1
+  qr_code_scanner: ^1.0.1
+  geolocator: ^9.0.2
+  provider: ^6.0.4
+  font_awesome_flutter: ^10.2.1
+  flutter_native_splash: ^2.2.16
 
 
 dev_dependencies:
@@ -59,7 +67,8 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   flutter_launcher_icons: ^0.10.0
-  font_awesome_flutter: ^10.2.1
+
+  
 
 flutter_icons:
   image_path_android: "assets/icons/logo_android.png"

@@ -1,11 +1,15 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart';
+import 'package:kubike_app/page/home.dart';
+import 'package:kubike_app/service/auth_service.dart';
 import 'package:kubike_app/share/color.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
-import '../api/google_signin_api.dart';
+import 'package:kubike_app/util/show_loading.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,137 +20,183 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  Future<void> _initAuth(BuildContext context) async {
+    final authService = context.read<AuthService>();
+    await authService.init();
+    if (authService.currentUser != null) {
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: ((context) => const HomePage())),
+          (route) => false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initAuth(context);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    Future googleSignIn() async {
-      final GoogleSignInAccount? user = await GoogleSignInApi.login();
-
-      final GoogleSignInAuthentication? googleAuth = await user?.authentication;
-
-      print(googleAuth?.idToken);
-      print(googleAuth?.accessToken);
-
-      // if (user == null || googleAuth == null) {
-      //   ScaffoldMessenger.of(context)
-      //       .showSnackBar(SnackBar(content: Text('Sign in Failed')));
-      // } else {
-      //   print('go to next page');
-      //   Navigator.of(context).pushReplacement(MaterialPageRoute(
-      //       builder: (context) =>
-      //           LoggedInPage(user: user, googleAuth: googleAuth)));
-      // }
-    }
-
-    return Container(
-      decoration: const BoxDecoration(
-          image: DecorationImage(
-              image: AssetImage('assets/background.png'), fit: BoxFit.cover)),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Column(
-          children: [
-            Container(
-              color: Colors.transparent,
-              alignment: Alignment.center,
-              // padding: const EdgeInsets.all(32),
-              margin: const EdgeInsets.only(bottom: 200),
-            ),
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30))),
-                alignment: Alignment.topLeft,
-                padding: const EdgeInsets.only(left: 40, right: 40),
-                child: SingleChildScrollView(
-                    child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(
-                      height: 60,
-                    ),
-                    Text('Hey There,',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 32,
-                            color: AppColor.darkGreen)),
-                    Text('Welcom to KU-Bike',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 32,
-                            color: AppColor.darkGreen)),
-                    SizedBox(height: 16),
-                    Text(
-                      'Please Login to your Kasetsart account to continue',
-                      style: TextStyle(color: AppColor.darkGreen, fontSize: 16),
-                    ),
-                    const SizedBox(height: 60),
-                    OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            padding: const EdgeInsets.only(top: 10, bottom: 10),
-                            side: BorderSide(color: AppColor.darkGreen),
-                            textStyle: const TextStyle(fontSize: 18),
-                            foregroundColor: AppColor.darkGreen),
-                        onPressed: () => print('login with Nontri press'),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: const [
-                            Text('KU',
-                                style: TextStyle(
-                                    fontSize: 24, fontWeight: FontWeight.w900)),
-                            Text('Login with Nontri'),
-                            SizedBox(
-                              width: 20,
-                            )
-                          ],
-                        )),
-                    const SizedBox(
-                      height: 25,
-                    ),
-                    Row(children: [
-                      Expanded(child: Divider(color: Colors.grey[600])),
-                      Padding(
-                        padding: EdgeInsets.only(left: 10, right: 10),
-                        child: Text(
-                          "or",
-                          style: TextStyle(color: Colors.grey[500]),
-                        ),
-                      ),
-                      Expanded(child: Divider(color: Colors.grey[600])),
-                    ]),
-                    const SizedBox(
-                      height: 25,
-                    ),
-                    OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            padding: const EdgeInsets.only(top: 10, bottom: 10),
-                            side: BorderSide(color: AppColor.darkGreen),
-                            textStyle: const TextStyle(fontSize: 18),
-                            foregroundColor: AppColor.darkGreen),
-                        onPressed: googleSignIn,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: const [
-                            Icon(FontAwesomeIcons.google),
-                            Text('Login with Google'),
-                            SizedBox(
-                              width: 20,
-                            )
-                          ],
-                        )),
-                  ],
-                )),
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage('assets/background.png'), fit: BoxFit.cover)),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Column(
+            children: [
+              Container(
+                color: Colors.transparent,
+                alignment: Alignment.center,
+                // padding: const EdgeInsets.all(32),
+                margin: const EdgeInsets.only(bottom: 200),
               ),
-            ),
-          ],
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30))),
+                  alignment: Alignment.topLeft,
+                  padding: const EdgeInsets.only(left: 40, right: 40),
+                  child: SingleChildScrollView(
+                      child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(
+                        height: 60,
+                      ),
+                      Text('Welcom to KU-Bike',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 32,
+                              color: AppColor.darkGreen)),
+                      SizedBox(height: 16),
+                      Text(
+                        'Please Login to your Kasetsart account to continue',
+                        style:
+                            TextStyle(color: AppColor.darkGreen, fontSize: 16),
+                      ),
+                      const SizedBox(height: 60),
+                      OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                              padding:
+                                  const EdgeInsets.only(top: 10, bottom: 10),
+                              side: BorderSide(color: AppColor.darkGreen),
+                              textStyle: const TextStyle(fontSize: 18),
+                              foregroundColor: AppColor.darkGreen),
+                          onPressed: () {
+                            googleSignInHandle(context: context);
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: const [
+                              Icon(FontAwesomeIcons.google),
+                              Text('Login with Google'),
+                              SizedBox(
+                                width: 20,
+                              )
+                            ],
+                          )),
+                      const SizedBox(
+                        height: 25,
+                      ),
+                      Row(children: [
+                        Expanded(child: Divider(color: Colors.grey[600])),
+                        Padding(
+                          padding: EdgeInsets.only(left: 10, right: 10),
+                          child: Text(
+                            "or",
+                            style: TextStyle(color: Colors.grey[500]),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: Colors.grey[600])),
+                      ]),
+                      SizedBox(
+                        height: 25,
+                      ),
+                      OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.grey[300],
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                              padding:
+                                  const EdgeInsets.only(top: 10, bottom: 10),
+                              side: BorderSide(color: AppColor.darkGreen),
+                              textStyle: const TextStyle(fontSize: 18),
+                              foregroundColor: AppColor.darkGreen),
+                          onPressed: () {
+                            test(context: context);
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: const [
+                              Text('KU',
+                                  style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w900)),
+                              Text('Login with Nontri'),
+                              SizedBox(
+                                width: 20,
+                              )
+                            ],
+                          )),
+                      const SizedBox(
+                        height: 25,
+                      ),
+                    ],
+                  )),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> googleSignInHandle({required BuildContext context}) async {
+    final AuthService authService = context.read<AuthService>();
+    showLoading(context: context);
+
+    try {
+      await authService.googleLogin();
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+          (route) => false);
+    } catch (e) {
+      unshowLoading(context: context);
+      showDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: Text("Error"),
+          content: Text('Login with Google Account Fail'),
+          actions: [
+            CupertinoDialogAction(
+              child: Text(
+                'OK',
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<void> test({required BuildContext context}) async {
+    // final AuthService authService = context.read<AuthService>();
+    // await authService.googleSignOut();
+    // await authService.googleLogin();
   }
 }
