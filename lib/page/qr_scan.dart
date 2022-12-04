@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'dart:developer';
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -11,6 +11,7 @@ import 'package:kubike_app/exception/bike_api_exception.dart';
 import 'package:kubike_app/provider/bike_provider.dart';
 import 'package:kubike_app/service/bike_service.dart';
 import 'package:kubike_app/service/location_service.dart';
+import 'package:kubike_app/service/showAppDialog.dart';
 import 'package:kubike_app/share/color.dart';
 import 'package:kubike_app/util/show_loading.dart';
 import 'package:provider/provider.dart';
@@ -29,6 +30,7 @@ class _QRScanPageState extends State<QRScanPage> {
   QRViewController? qrController;
   Barcode? _barcode;
   late bool _isBorrow;
+  bool QrBeingProcessed = false;
 
   @override
   void initState() {
@@ -61,8 +63,8 @@ class _QRScanPageState extends State<QRScanPage> {
         alignment: Alignment.center,
         children: [
           buildQrView(context),
-          Positioned(bottom: 10, child: buildResult()),
-          Positioned(top: 10, child: buildControlButtons()),
+          Positioned(bottom: 50, child: buildResult()),
+          Positioned(top: 50, child: buildControlButtons()),
         ],
       ),
     );
@@ -79,19 +81,43 @@ class _QRScanPageState extends State<QRScanPage> {
           children: [
             IconButton(
                 onPressed: () async {
-                  await qrController!.toggleFlash();
+                  try {
+                    await qrController!.toggleFlash();
+                  } catch (e) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => CupertinoAlertDialog(
+                        title: Text("ERROR"),
+                        content: Text('โทรศัพท์มือถือไม่สามารถเปิด Flash ได้'),
+                        actions: [
+                          CupertinoDialogAction(
+                            child: Text(
+                              'OK',
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
                   setState(() {});
                 },
                 icon: FutureBuilder<bool?>(
                     future: qrController?.getFlashStatus(),
                     builder: (context, snapshot) {
-                      if (snapshot.data != null) {
+                      if (snapshot.hasData) {
                         return Icon(
                           snapshot.data! ? Icons.flash_on : Icons.flash_off,
                           color: Colors.white,
                         );
                       } else {
-                        return Container();
+                        return Icon(
+                          Icons.flash_off,
+                          color: Colors.white,
+                        );
                       }
                     })),
             IconButton(
@@ -129,63 +155,63 @@ class _QRScanPageState extends State<QRScanPage> {
             cutOutSize: MediaQuery.of(context).size.width * 0.8),
       );
 
-  void onQRViewCreated(QRViewController controller) {
-    final bikeProvider = context.read<BikeProvider>();
-    qrController = controller;
-    controller.resumeCamera();
-    controller.scannedDataStream.listen((barcode) async {
-      setState(() {
-        _barcode = barcode;
-      });
+  Future<void> barcodeHandle(Barcode barcode, StreamSubscription streamSub,
+      var controller, var bikeProvider) async {
+    setState(() {
+      _barcode = barcode;
+    });
+    if (validateQrCode(barcode) && mounted) {
+      Position? currentPosition =
+          await LocationService.determinePosition(context);
 
-      if (validateQrCode(barcode)) {
-        Position currentPosition = await LocationService.determinePosition();
-
-        if (_isBorrow) {
-          bool _willBorrow = false;
-
-          showDialog(
+      if (currentPosition == null) {
+        await showAppDialog(
             context: context,
-            builder: (context) => CupertinoAlertDialog(
-              title: Text("CONFIRM"),
-              content:
-                  Text('คุณจะยืมจักรยานหมายเลข ${barcode.code} จริงหรือไม่'),
-              actions: [
-                CupertinoDialogAction(
-                  child: Text(
-                    'ไม่',
-                  ),
-                  onPressed: () {
-                    _willBorrow = false;
-                    Navigator.of(context).pop();
-                  },
+            title: 'คำเตือน',
+            content: 'โปรดสแกน QRCode ใหม่อีกครั้ง');
+        return;
+      }
+      if (!_isBorrow) {
+        bool _willBorrow = false;
+        await showDialog(
+          context: context,
+          builder: (context) => CupertinoAlertDialog(
+            title: Text("CONFIRM"),
+            content: Text('คุณจะยืมจักรยานหมายเลข ${barcode.code} จริงหรือไม่'),
+            actions: [
+              CupertinoDialogAction(
+                child: Text(
+                  'ไม่',
                 ),
-                CupertinoDialogAction(
-                  child: Text(
-                    'ใช่',
-                  ),
-                  onPressed: () {
-                    _willBorrow = true;
-                    Navigator.of(context).pop();
-                  },
-                )
-              ],
-            ),
-          );
+                onPressed: () {
+                  _willBorrow = false;
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              ),
+              CupertinoDialogAction(
+                child: Text(
+                  'ใช่',
+                ),
+                onPressed: () {
+                  _willBorrow = true;
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              )
+            ],
+          ),
+        );
 
-          if (!_willBorrow) return;
-
+        if (_willBorrow) {
           try {
-            showLoading(context: context);
+            // showLoading(context: context);
             await BikeService.borrowBike(
                 bikeCode: barcode.code!,
-                currentPosition: currentPosition,
+                currentPosition: currentPosition!,
                 bikeProvider: bikeProvider);
-            unshowLoading(context: context);
+            // unshowLoading(context: context);
             Navigator.of(context).pop();
           } on BikeApiException catch (e) {
-            unshowLoading(context: context);
-            showDialog(
+            await showDialog(
               context: context,
               builder: (context) => CupertinoAlertDialog(
                 title: Text("ERROR"),
@@ -196,15 +222,16 @@ class _QRScanPageState extends State<QRScanPage> {
                       'OK',
                     ),
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      Navigator.of(context, rootNavigator: true).pop('dialog');
                     },
                   ),
                 ],
               ),
             );
           } catch (e) {
-            unshowLoading(context: context);
-            showDialog(
+            print(e);
+            // unshowLoading(context: context);
+            await showDialog(
               context: context,
               builder: (context) => CupertinoAlertDialog(
                 title: Text("ERROR"),
@@ -215,18 +242,129 @@ class _QRScanPageState extends State<QRScanPage> {
                       'OK',
                     ),
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      Navigator.of(context, rootNavigator: true).pop('dialog');
                     },
                   ),
                 ],
               ),
             );
           }
-        } else {}
+        }
       } else {
-        // pop loading
-        // show alert
+        bool _willReturn = false;
+        await showDialog(
+          context: context,
+          builder: (context) => CupertinoAlertDialog(
+            title: Text("CONFIRM"),
+            content: Text('คุณจะคินจักรยานหมายเลข ${barcode.code} จริงหรือไม่'),
+            actions: [
+              CupertinoDialogAction(
+                child: Text(
+                  'ไม่',
+                ),
+                onPressed: () {
+                  _willReturn = false;
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              ),
+              CupertinoDialogAction(
+                child: Text(
+                  'ใช่',
+                ),
+                onPressed: () {
+                  _willReturn = true;
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              )
+            ],
+          ),
+        );
 
+        if (_willReturn) {
+          try {
+            // showLoading(context: context);
+            await BikeService.returnBike(
+                bikeCode: barcode.code!,
+                currentPosition: currentPosition!,
+                bikeProvider: bikeProvider);
+            // unshowLoading(context: context);
+            Navigator.of(context).pop();
+          } on BikeApiException catch (e) {
+            await showDialog(
+              context: context,
+              builder: (context) => CupertinoAlertDialog(
+                title: Text("ERROR"),
+                content: Text('${e.message}'),
+                actions: [
+                  CupertinoDialogAction(
+                    child: Text(
+                      'OK',
+                    ),
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).pop('dialog');
+                    },
+                  ),
+                ],
+              ),
+            );
+          } catch (e) {
+            print(e);
+            // unshowLoading(context: context);
+            await showDialog(
+              context: context,
+              builder: (context) => CupertinoAlertDialog(
+                title: Text("ERROR"),
+                content: Text('ไม่สามารถคืนจักรยานได้ กรุณาลองใหม่อีกครั้ง'),
+                actions: [
+                  CupertinoDialogAction(
+                    child: Text(
+                      'OK',
+                    ),
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).pop('dialog');
+                    },
+                  ),
+                ],
+              ),
+            );
+          }
+        }
+      }
+    } else {
+      // pop loading
+      // show alert
+      await showDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: Text("ERROR"),
+          content: Text('QRCode ไม่ถูกต้อง'),
+          actions: [
+            CupertinoDialogAction(
+              child: Text(
+                'OK',
+              ),
+              onPressed: () {
+                Navigator.of(context, rootNavigator: true).pop('dialog');
+              },
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  void onQRViewCreated(QRViewController controller) {
+    final bikeProvider = context.read<BikeProvider>();
+    qrController = controller;
+    controller.resumeCamera();
+
+    late StreamSubscription streamSub;
+    streamSub = controller.scannedDataStream.listen((barcode) async {
+      if (!QrBeingProcessed) {
+        QrBeingProcessed = true;
+        await barcodeHandle(barcode, streamSub, controller, bikeProvider);
+        await Future.delayed(Duration(seconds: 1));
+        QrBeingProcessed = false;
       }
     });
   }

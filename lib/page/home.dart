@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -22,39 +21,23 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int index = 0;
-  late StreamSubscription<bool?>? isBorrowSub;
-  var screens = [MapPage(), BikeBorrowPage(), ProfilePage(), TestPage()];
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    final isBorrowStream = context.read<BikeProvider>().getIsBorrowStream();
-
-    isBorrowSub = isBorrowStream.listen((isBorrow) {
-      if (mounted) {
-        if (isBorrow) {
-          setState(() {
-            screens[1] = BikeReturnPage();
-          });
-        } else {
-          setState(() {
-            screens[1] = BikeBorrowPage();
-          });
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    isBorrowSub?.cancel();
-    super.dispose();
-  }
+  var screens = [MapPage(), BikeReturnPage(), ProfilePage(), TestPage()];
 
   @override
   Widget build(BuildContext context) {
+    BikeProvider bikeProvider = context.watch<BikeProvider>();
+    bool isBorrow = bikeProvider.isBorrow();
+
+    if (isBorrow) {
+      setState(() {
+        screens[1] = BikeReturnPage();
+      });
+    } else {
+      setState(() {
+        screens[1] = BikeBorrowPage();
+      });
+    }
+
     return Scaffold(
       body: screens[index],
       bottomNavigationBar: NavigationBarTheme(

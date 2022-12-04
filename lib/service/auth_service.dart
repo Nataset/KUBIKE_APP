@@ -27,23 +27,28 @@ class AuthService {
 
     if (accessToken == null) return;
 
-    final getUserRes = await http.post(Uri.parse('$BACKEND_URL/api/me'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': "Bearer ${accessToken}"
-        }).catchError((http.ClientException e) {
+    late http.Response getUserRes;
+    try {
+      getUserRes = await http.post(Uri.parse('$BACKEND_URL/api/me'), headers: {
+        'Content-Type': 'application/json',
+        'Authorization': "Bearer ${accessToken}"
+      });
+
+      if (getUserRes.statusCode == 401) {
+        return;
+      }
+
+      if (getUserRes.statusCode != 200) {
+        print(getUserRes.statusCode);
+        print(getUserRes.body);
+        throw Exception('init error');
+      }
+    } on http.ClientException catch (e) {
       print(e.message);
-      throw Exception('init error');
-    });
-
-    if (getUserRes.statusCode == 401) {
-      return;
-    }
-
-    if (getUserRes.statusCode != 200) {
-      print(getUserRes.statusCode);
-      print(getUserRes.body);
-      throw Exception('init error');
+      throw Exception("Can't connect to the backend service");
+    } catch (e) {
+      print(e);
+      throw Exception("Init Error");
     }
 
     Map<String, dynamic> userMap = jsonDecode(getUserRes.body);
@@ -60,7 +65,8 @@ class AuthService {
         ? Bike(
             // id: userMap['current_bike']['id'].toString(),
             lockCode: userMap['current_bike']['lock_code'],
-            bikeCode: userMap['current_bike']['bike_code'])
+            bikeCode: userMap['current_bike']['bike_code'],
+            borrowAt: parseDateTime(userMap['latest_status']['borrow_at']))
         : null;
 
     _bikeProvider.currentBike = bike;
@@ -72,18 +78,19 @@ class AuthService {
         await googleUser?.authentication;
     final googleToken = googleAuth?.accessToken;
 
-    print(googleToken);
-
     http.Response authPostRes;
 
+    print('test from auth server 1');
     try {
       authPostRes = await http.post(Uri.parse('$BACKEND_URL/api/auth/google'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({"access_token": googleToken}));
     } on http.ClientException catch (e) {
       print(e.message);
-      throw Exception('google login error');
+      rethrow;
     }
+
+    print('test from auth server 2');
 
     if (authPostRes.statusCode != 200) {
       print(authPostRes.statusCode);
@@ -108,19 +115,22 @@ class AuthService {
         ? Bike(
             // id: userMap['current_bike']['id'].toString(),
             lockCode: userMap['current_bike']['lock_code'],
-            bikeCode: userMap['current_bike']['bike_code'])
+            bikeCode: userMap['current_bike']['bike_code'],
+            borrowAt: parseDateTime(userMap['latest_status']['borrow_at']))
         : null;
 
     _bikeProvider.currentBike = bike;
+
+    print('test from auth server 3');
   }
 
   Future<void> googleSignOut() async {
     _currentUser = null;
 
-    if (_googleSignIn.currentUser != null) {
-      await _googleSignIn.signOut();
-    }
+    await _googleSignIn.signOut();
 
     await Storage.deleteAccessToken();
   }
+
+  DateTime parseDateTime(String dateString) => DateTime.parse(dateString);
 }

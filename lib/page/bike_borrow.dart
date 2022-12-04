@@ -77,7 +77,7 @@ class _BikeBorrowPageState extends State<BikeBorrowPage> {
           ),
         ),
         Container(
-          margin: EdgeInsets.only(top: 30, bottom: 30),
+          margin: EdgeInsets.only(bottom: 10),
           padding: EdgeInsets.only(left: 30, right: 30),
           child: ElevatedButton(
               style: ElevatedButton.styleFrom(

@@ -6,7 +6,7 @@ class User extends ChangeNotifier {
   String email;
   String? googleId;
   String id;
-  String profileImage;
+  String? profileImage;
 
   User({
     required this.name,

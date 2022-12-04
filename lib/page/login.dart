@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart';
 import 'package:kubike_app/page/home.dart';
 import 'package:kubike_app/service/auth_service.dart';
+import 'package:kubike_app/service/showAppDialog.dart';
 import 'package:kubike_app/share/color.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kubike_app/util/show_loading.dart';
@@ -22,7 +23,29 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   Future<void> _initAuth(BuildContext context) async {
     final authService = context.read<AuthService>();
-    await authService.init();
+    try {
+      await authService.init();
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: Text("Error"),
+          content: Text(
+              "Can't connect to the backend service, Please try again later"),
+          actions: [
+            CupertinoDialogAction(
+              child: Text(
+                'OK',
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        ),
+      );
+    }
+
     if (authService.currentUser != null) {
       Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: ((context) => const HomePage())),
@@ -134,7 +157,10 @@ class _LoginPageState extends State<LoginPage> {
                               textStyle: const TextStyle(fontSize: 18),
                               foregroundColor: AppColor.darkGreen),
                           onPressed: () {
-                            test(context: context);
+                            showAppDialog(
+                                context: context,
+                                title: 'Error',
+                                content: "this feature, still in development");
                           },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -172,7 +198,29 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const HomePage()),
           (route) => false);
+    } on ClientException catch (e) {
+      await authService.googleSignOut();
+      unshowLoading(context: context);
+      showDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: Text("Error"),
+          content: Text(
+              "Can't connect to the backend service, Please try again later"),
+          actions: [
+            CupertinoDialogAction(
+              child: Text(
+                'OK',
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        ),
+      );
     } catch (e) {
+      await authService.googleSignOut();
       unshowLoading(context: context);
       showDialog(
         context: context,
@@ -192,11 +240,5 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     }
-  }
-
-  Future<void> test({required BuildContext context}) async {
-    // final AuthService authService = context.read<AuthService>();
-    // await authService.googleSignOut();
-    // await authService.googleLogin();
   }
 }

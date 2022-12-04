@@ -1,17 +1,25 @@
+import 'dart:developer';
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:kubike_app/exception/location_disabled_exception.dart';
+import 'package:kubike_app/exception/location_permission_exception.dart';
+import 'package:kubike_app/service/showAppDialog.dart';
 
 class LocationService {
-  static Future<Position> determinePosition() async {
+  static Future<void> checkPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Test if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       // Location services are not enabled don't continue
       // accessing the position and request users of the
       // App to enable the location services.
-      return Future.error('Location services are disabled.');
+      // return Future.error('Location services are disabled.');
+      throw LocationDisabledException('Location services are disabled.');
     }
 
     permission = await Geolocator.checkPermission();
@@ -23,18 +31,134 @@ class LocationService {
         // Android's shouldShowRequestPermissionRationale
         // returned true. According to Android guidelines
         // your App should show an explanatory UI now.
-        return Future.error('Location permissions are denied');
+        // return Future.error('Location permissions are denied');
+        throw LocationPermissionException('Location permissions are denied');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       // Permissions are denied forever, handle appropriately.
-      return Future.error(
+      // return Future.error(
+      //     'Location permissions are permanently denied, we cannot request permissions.');
+      throw LocationPermissionException(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
+  }
 
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
+  static LocationSettings getLocationSettings() {
+    late LocationSettings locationSettings;
+
+    if (Platform.isAndroid) {
+      locationSettings = AndroidSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 100,
+          forceLocationManager: true,
+          intervalDuration: const Duration(seconds: 5)
+          //(Optional) Set foreground notification config to keep the app alive
+          //when going to the background
+          );
+    } else if (Platform.isIOS || Platform.isMacOS) {
+      locationSettings = AppleSettings(
+        accuracy: LocationAccuracy.high,
+        activityType: ActivityType.fitness,
+        distanceFilter: 100,
+        pauseLocationUpdatesAutomatically: true,
+        // Only set to true if our app will be started up in the background.
+        showBackgroundLocationIndicator: false,
+      );
+    } else {
+      locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 100,
+      );
+    }
+
+    return locationSettings;
+  }
+
+  static Future<Stream<Position>?> getPositionStream(context) async {
+    try {
+      await checkPermission();
+    } on LocationDisabledException catch (e) {
+      await showAppDialog(context: context, title: 'Error', content: e.message);
+      await Geolocator.openLocationSettings();
+      return null;
+    } on LocationPermissionException catch (e) {
+      await showAppDialog(context: context, title: 'Error', content: e.message);
+      await Geolocator.openAppSettings();
+      return null;
+    } finally {}
+
+    return Geolocator.getPositionStream(
+        locationSettings: getLocationSettings());
+  }
+
+  static Future<Position?> determinePosition(context) async {
+    try {
+      await checkPermission();
+    } on LocationDisabledException catch (e) {
+      print(e.message);
+      await showDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: Text("ERROR"),
+          content: Text(
+              'Location Service ปิดอยู่โปรดเปิดก่อนใช้งาน "KU-BIKE", กด "ตกลง" เพื่อเข้าสู่หน้าตั้งค่า'),
+          actions: [
+            CupertinoDialogAction(
+              child: Text(
+                'ไม่ตกลง',
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            CupertinoDialogAction(
+              child: Text(
+                'ตกลง',
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await Geolocator.openLocationSettings();
+              },
+            ),
+          ],
+        ),
+      );
+      await Geolocator.openLocationSettings();
+      return null;
+    } on LocationPermissionException catch (e) {
+      print(e.message);
+      await showDialog<bool>(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: Text("ERROR"),
+          content: Text(
+              '"KU-BIKE" ไม่มี Permission ในการเข้าถึง Location Service ได้กรุณาให้ Permission กับ "KU-BIKE", กด "ตกลง" เพื่อเข้าสู่หน้าตั้งค่า'),
+          actions: [
+            CupertinoDialogAction(
+              child: Text(
+                'ไม่ตกลง',
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            CupertinoDialogAction(
+              child: Text(
+                'ตกลง',
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await Geolocator.openAppSettings();
+              },
+            ),
+          ],
+        ),
+      );
+      return null;
+    }
+
     return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
   }

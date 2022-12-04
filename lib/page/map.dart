@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
@@ -7,10 +8,18 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:kubike_app/exception/location_permission_exception.dart';
 import 'package:kubike_app/model/hub_model.dart';
+import 'package:kubike_app/provider/map_provider.dart';
 import 'package:kubike_app/service/hub_service.dart';
+import 'package:kubike_app/service/location_service.dart';
 import 'package:kubike_app/share/color.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
+
+import '../exception/location_disabled_exception.dart';
+import '../provider/bike_provider.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -23,11 +32,106 @@ class _MapPageState extends State<MapPage> {
   List<Hub> _hubs = [];
   late bool _isError = false;
   final LatLng _mapDefaultPosition = LatLng(13.8478, 100.5725);
-  final _mapController = MapController();
+  late final MapController _mapController;
+
+  MapPosition? _lastPosition;
+  // bool _isLocationStart = false;
+
+  late CenterOnLocationUpdate _centerOnLocationUpdate;
+  late StreamController<double?> _centerCurrentLocationStreamController;
+
+  // void startCurrentLocation() {
+  //   streamSubscription?.cancel();
+  //   _subscriptPositionStream();
+  //   setState(() {
+  //     _isLocationStart = true;
+  //   });
+  // }
+
+  // void stopCurrentLocation() {
+  //   streamSubscription?.cancel();
+  //   setState(() {
+  //     _isLocationStart = false;
+  //   });
+  // }
+
+  Future<bool> checkLocation() async {
+    try {
+      await LocationService.checkPermission();
+      // } on LocationDisabledException catch (e) {
+      //   await showDialog(
+      //     context: context,
+      //     builder: (context) => CupertinoAlertDialog(
+      //       title: Text("ERROR"),
+      //       content: Text(
+      //           'Location Service ปิดอยู่โปรดเปิดก่อนใช้งาน "KU-BIKE", กด "ตกลง" เพื่อเข้าสู่หน้าตั้งค่า'),
+      //       actions: [
+      //         CupertinoDialogAction(
+      //           child: Text(
+      //             'ไม่ตกลง',
+      //           ),
+      //           onPressed: () {
+      //             Navigator.of(context).pop();
+      //           },
+      //         ),
+      //         CupertinoDialogAction(
+      //           child: Text(
+      //             'ตกลง',
+      //           ),
+      //           onPressed: () async {
+      //             Navigator.of(context).pop();
+      //             await Geolocator.openLocationSettings();
+      //           },
+      //         ),
+      //       ],
+      //     ),
+      //   );
+      //   return false;
+    } on LocationPermissionException catch (e) {
+      await showDialog<bool>(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: Text("ERROR"),
+          content: Text(
+              '"KU-BIKE" ไม่มี Permission ในการเข้าถึง Location Service ได้กรุณาให้ Permission กับ "KU-BIKE", กด "ตกลง" เพื่อเข้าสู่หน้าตั้งค่า'),
+          actions: [
+            CupertinoDialogAction(
+              child: Text(
+                'ไม่ตกลง',
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            CupertinoDialogAction(
+              child: Text(
+                'ตกลง',
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await Geolocator.openAppSettings();
+              },
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+
+    return true;
+  }
 
   @override
   void initState() {
     super.initState();
+    _mapController = MapController();
+
+    checkLocation();
+
+    _centerOnLocationUpdate = CenterOnLocationUpdate.always;
+    _centerCurrentLocationStreamController = StreamController<double?>();
+
+    _lastPosition = context.read<MapLastLocationProvider>().lastPosition;
 
     HubService.fetchHubs().then((hubs) {
       if (mounted) {
@@ -42,11 +146,39 @@ class _MapPageState extends State<MapPage> {
         }
       }
     });
+
+    // positionStream = StreamController();
+
+    // (() async {
+    //   if (await checkLocation()) {
+    //     startCurrentLocation();
+    //   }
+    // })();
+
+    // serviceStatusStream =
+    //     Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
+    //   if (status == ServiceStatus.enabled) {
+    //     startCurrentLocation();
+    //   } else {
+    //     stopCurrentLocation();
+    //   }
+    // });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+
+    // streamSubscription?.cancel();
+    // serviceStatusStream?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
+
+    var needLoadingError = true;
     void showHubsDetail(Hub hub) {
       _mapController.moveAndRotate(
           LatLng(hub.latitude - 0.005, hub.longitude - 0.003), 16, -30);
@@ -95,7 +227,7 @@ class _MapPageState extends State<MapPage> {
                                     color: AppColor.darkGreen),
                               ),
                               Text(
-                                '${hub.longitude}, ${hub.latitude}',
+                                '${hub.latitude}, ${hub.longitude}',
                                 style: TextStyle(
                                   color: AppColor.green,
                                 ),
@@ -229,29 +361,65 @@ class _MapPageState extends State<MapPage> {
         FlutterMap(
           mapController: _mapController,
           options: MapOptions(
-            center: _mapDefaultPosition,
-            zoom: 15,
-            maxZoom: 18,
-            rotation: -30,
-            keepAlive: true,
-            maxBounds: LatLngBounds(
-              LatLng(13.9, 100.5),
-              LatLng(13.8, 100.6),
-            ),
-          ),
+              center: _lastPosition == null
+                  ? _mapDefaultPosition
+                  : _lastPosition!.center,
+              zoom: _lastPosition?.zoom == null ? 15 : _lastPosition!.zoom!,
+              maxZoom: 18,
+              rotation: -30,
+              keepAlive: true,
+              screenSize: MediaQuery.of(context).size,
+              onPositionChanged: (MapPosition position, bool hasGesture) {
+                context.read<MapLastLocationProvider>().lastPosition = position;
+                if (hasGesture) {
+                  setState(
+                    () =>
+                        _centerOnLocationUpdate = CenterOnLocationUpdate.never,
+                  );
+                }
+              }),
           nonRotatedChildren: [
-            AttributionWidget.defaultWidget(
-              source: 'OpenStreetMap contributors',
-              onSourceTapped: null,
-            ),
+            // AttributionWidget.defaultWidget(
+            //   source: 'OpenStreetMap contributors',
+            //   onSourceTapped: null,
+            // ),
+            Positioned(
+                child: Container(
+              child: Text('OpenStreetMap'),
+            )),
+            Positioned(
+                right: 20,
+                bottom: 40,
+                child: FloatingActionButton(
+                  backgroundColor: Colors.blue[700],
+                  onPressed: () {
+                    // Automatically center the location marker on the map when location updated until user interact with the map.
+                    setState(
+                      () => _centerOnLocationUpdate =
+                          CenterOnLocationUpdate.always,
+                    );
+                    // Center the location marker on the map and zoom the map to level 18.
+                    _centerCurrentLocationStreamController.add(18);
+                  },
+                  child: const Icon(
+                    Icons.my_location,
+                    color: Colors.white,
+                  ),
+                ))
           ],
           children: [
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.example.app',
+              // urlTemplate: 'http://10.0.2.2:8080/tile/{z}/{x}/{y}.png',
+              tileProvider: NetworkTileProvider(),
+              userAgentPackageName: 'com.example.kubike_app',
             ),
+            // if (_isLocationStart)
             CurrentLocationLayer(
+              // positionStream: positionStream.stream,
               centerOnLocationUpdate: CenterOnLocationUpdate.never,
+              centerCurrentLocationStream:
+                  _centerCurrentLocationStreamController.stream,
               turnOnHeadingUpdate: TurnOnHeadingUpdate.never,
               style: LocationMarkerStyle(
                 marker: const DefaultLocationMarker(
@@ -320,11 +488,24 @@ class _MapPageState extends State<MapPage> {
                                       }
                                     });
                                   },
-                                  child: const Icon(
-                                    Icons.location_pin,
-                                    size: 50,
-                                    color: Colors.red,
-                                  )),
+                                  child: context.read<BikeProvider>().isBorrow()
+                                      ? (_hubs[index].available_parking_slot <=
+                                              0
+                                          ? Icon(Icons.location_off,
+                                              size: 50, color: Colors.red)
+                                          : Icon(
+                                              Icons.location_pin,
+                                              size: 50,
+                                              color: Colors.green,
+                                            ))
+                                      : (_hubs[index].available_bike <= 0
+                                          ? Icon(Icons.location_off,
+                                              size: 50, color: Colors.red)
+                                          : Icon(
+                                              Icons.location_pin,
+                                              size: 50,
+                                              color: Colors.green,
+                                            ))),
                             ))
                     : []),
           ],
@@ -351,4 +532,21 @@ class _MapPageState extends State<MapPage> {
     );
     ;
   }
+
+  // void _subscriptPositionStream() {
+  //   streamSubscription = const LocationMarkerDataStreamFactory()
+  //       .geolocatorPositionStream(
+  //     stream: Geolocator.getPositionStream(
+  //       locationSettings: LocationService.getLocationSettings(),
+  //     ),
+  //   )
+  //       .handleError((error) {
+  //     print(error);
+  //   }).listen(
+  //     (position) {
+  //       log('the location is updated');
+  //       positionStream.add(position);
+  //     },
+  //   );
+  // }
 }

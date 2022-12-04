@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -16,6 +17,8 @@ class BikeService {
       required BikeProvider bikeProvider}) async {
     final accessToken = await Storage.getAccessToken();
 
+    log(currentPosition.toString());
+
     try {
       final borrowPostRes = await http.post(
           Uri.parse('$BACKEND_URL/api/borrow/$bikeCode'),
@@ -24,11 +27,14 @@ class BikeService {
             "Authorization": "Bearer ${accessToken}"
           },
           body: jsonEncode({
-            "latitude": currentPosition.latitude,
-            "longitude": currentPosition.longitude
+            // "latitude": currentPosition.latitude,
+            // "longitude": currentPosition.longitude
+            "latitude": 13.847279,
+            "longitude": 100.571521
           }));
 
-      if (borrowPostRes.statusCode == 400) {
+      if (borrowPostRes.statusCode == 400 || borrowPostRes.statusCode == 404) {
+        log(borrowPostRes.statusCode.toString());
         throw BikeApiException(borrowPostRes.body);
       }
 
@@ -37,10 +43,52 @@ class BikeService {
             'post fail with statusCode: ${borrowPostRes.statusCode}, message: ${borrowPostRes.body}');
       }
 
-      Map<String, String> bikeMap = jsonDecode(borrowPostRes.body);
+      Map<String, dynamic> bikeMap = jsonDecode(borrowPostRes.body);
       Bike borrowedBike = Bike(
-          lockCode: bikeMap['lock_code']!, bikeCode: bikeMap['bike_code']!);
+          lockCode: bikeMap['lock_code']!,
+          bikeCode: bikeMap['bike_code']!,
+          borrowAt: DateTime.now());
       bikeProvider.currentBike = borrowedBike;
+    } on http.ClientException catch (e) {
+      print(e.message);
+      throw Exception('post to borrow bike fail');
+    } on BikeApiException catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<void> returnBike(
+      {required String bikeCode,
+      required Position currentPosition,
+      required BikeProvider bikeProvider}) async {
+    final accessToken = await Storage.getAccessToken();
+
+    log(currentPosition.toString());
+
+    try {
+      final borrowPostRes = await http.post(
+          Uri.parse('$BACKEND_URL/api/return/$bikeCode'),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer ${accessToken}"
+          },
+          body: jsonEncode({
+            // "latitude": currentPosition.latitude,
+            // "longitude": currentPosition.longitude
+            "latitude": 13.847279,
+            "longitude": 100.571521
+          }));
+
+      if (borrowPostRes.statusCode == 400 || borrowPostRes.statusCode == 404) {
+        throw BikeApiException(borrowPostRes.body);
+      }
+
+      if (borrowPostRes.statusCode != 200) {
+        throw Exception(
+            'post fail with statusCode: ${borrowPostRes.statusCode}, message: ${borrowPostRes.body}');
+      }
+
+      bikeProvider.currentBike = null;
     } on http.ClientException catch (e) {
       print(e.message);
       throw Exception('post to borrow bike fail');

@@ -28,10 +28,11 @@ class _TestPageState extends State<TestPage> {
             children: [
               OutlinedButton(
                   onPressed: () async {
-                    final position = await LocationService.determinePosition();
+                    final position =
+                        await LocationService.determinePosition(context);
                     print(currentPosition);
-                    print(position.longitude);
-                    print(position.latitude);
+                    print(position?.longitude);
+                    print(position?.latitude);
                     setState(() {
                       currentPosition = position;
                     });
@@ -45,8 +46,10 @@ class _TestPageState extends State<TestPage> {
                   onPressed: () {
                     final bikeProvider = context.read<BikeProvider>();
                     if (bikeProvider.currentBike == null) {
-                      bikeProvider.currentBike =
-                          Bike(lockCode: 'test', bikeCode: 'test');
+                      bikeProvider.currentBike = Bike(
+                          lockCode: 'test',
+                          bikeCode: 'test',
+                          borrowAt: DateTime.now());
                     } else {
                       bikeProvider.currentBike = null;
                     }
