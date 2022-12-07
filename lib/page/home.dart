@@ -1,15 +1,10 @@
-import 'dart:developer';
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:kubike_app/page/bike_borrow.dart';
 import 'package:kubike_app/page/bike_return.dart';
-import 'package:kubike_app/page/login.dart';
 import 'package:kubike_app/page/map.dart';
 import 'package:kubike_app/page/profile.dart';
 import 'package:kubike_app/page/setting.dart';
-import 'package:kubike_app/page/test.dart';
 import 'package:kubike_app/provider/bike_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -22,7 +17,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int index = 0;
-  var screens = [MapPage(), BikeReturnPage(), ProfilePage(), SettingPage()];
+  var screens = [
+    const MapPage(),
+    const BikeReturnPage(),
+    const ProfilePage(),
+    const SettingPage()
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +31,11 @@ class _HomePageState extends State<HomePage> {
 
     if (isBorrow) {
       setState(() {
-        screens[1] = BikeReturnPage();
+        screens[1] = const BikeReturnPage();
       });
     } else {
       setState(() {
-        screens[1] = BikeBorrowPage();
+        screens[1] = const BikeBorrowPage();
       });
     }
 
@@ -52,23 +52,23 @@ class _HomePageState extends State<HomePage> {
             this.index = index;
           }),
           labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-          destinations: const [
+          destinations: [
             NavigationDestination(
-                icon: Icon(Icons.map_outlined),
-                selectedIcon: Icon(Icons.map),
-                label: 'Map'),
+                icon: const Icon(Icons.map_outlined),
+                selectedIcon: const Icon(Icons.map),
+                label: 'home.map'.tr()),
             NavigationDestination(
-                icon: Icon(Icons.pedal_bike_outlined),
-                selectedIcon: Icon(Icons.pedal_bike),
-                label: 'Bicycle'),
+                icon: const Icon(Icons.pedal_bike_outlined),
+                selectedIcon: const Icon(Icons.pedal_bike),
+                label: 'home.bicycle'.tr()),
             NavigationDestination(
-                icon: Icon(Icons.person_outline),
-                selectedIcon: Icon(Icons.person),
-                label: 'Profile'),
+                icon: const Icon(Icons.person_outline),
+                selectedIcon: const Icon(Icons.person),
+                label: 'home.profile'.tr()),
             NavigationDestination(
-                icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings),
-                label: 'Setting'),
+                icon: const Icon(Icons.settings_outlined),
+                selectedIcon: const Icon(Icons.settings),
+                label: 'home.setting'.tr()),
           ],
         ),
       ),

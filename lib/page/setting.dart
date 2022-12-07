@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
@@ -12,7 +13,22 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
-  bool _languageValue = true;
+  late bool _languageValue = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    // this will do but it bad
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        context.locale.toString() == 'en'
+            ? _languageValue = true
+            : _languageValue = false;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +42,12 @@ class _SettingPageState extends State<SettingPage> {
               height: 75,
             ),
             Text(
-              'Settings'.toUpperCase(),
+              "setting.setting",
               style: GoogleFonts.kanit(
                   color: Colors.black,
                   fontSize: 26,
                   fontWeight: FontWeight.w500),
-            ),
+            ).tr(),
             SizedBox(
               height: 50,
             ),
@@ -47,22 +63,28 @@ class _SettingPageState extends State<SettingPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'ภาษา',
+                        'setting.language',
                         style: GoogleFonts.kanit(
                             fontSize: 18, fontWeight: FontWeight.w500),
-                      ),
+                      ).tr(),
                       Text(
-                        'เปลี่ยนภาษาเป็นภาษาอังกฤษ',
+                        'setting.languageDescribe',
                         style: GoogleFonts.kanit(
                             fontSize: 14, color: Colors.grey[600]),
-                      ),
+                      ).tr(),
                     ],
                   ),
                   CupertinoSwitch(
                       value: _languageValue,
-                      onChanged: (value) => setState(() {
-                            _languageValue = value;
-                          }))
+                      onChanged: (value) {
+                        value
+                            ? context.setLocale(Locale('en'))
+                            : context.setLocale(Locale('th'));
+
+                        setState(() {
+                          _languageValue = value;
+                        });
+                      })
                 ],
               ),
             ),

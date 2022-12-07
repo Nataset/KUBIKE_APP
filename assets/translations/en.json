@@ -1,0 +1,83 @@
+{
+    "home": {
+        "map" : "Map",
+        "bicycle": "Bicycle",
+        "profile": "Profile",
+        "setting": "Setting"
+    },
+    "login": {
+        "welcome": "Welcome to KU BIKE",
+        "welcomeDescribe": "Please login using Kasetsart Google Account to start using app.",
+        "loginGoogle": "Login with Google",
+        "loginNontri": "Login with Nontri",
+        "dialog": {
+            "connectError" : "Can't connect to the backend service, Please try again later.",
+            "nontriError" : "This feature, still in development.",
+            "googleError" : "Login with Google Account Fail."
+        }
+    },
+    "bikeBorrow": {
+        "notFound": "NOT FOUND",
+        "notBorrow": "You didn't borrow a bicycle",
+        "borrowDescribe" : "Please go to \"KU-BIKE\" parking locations and scan QR code on the bicycle by press \"Scan QRCode to start borrow\" button and scan to start borrow it.",
+        "mapDescribe": "You can find parking location in map page",
+        "qrCode": "Scan QRCode To Start Borrow"
+    },
+    "bikeReturn": {
+        "detail": "Detail",
+        "bikeDescribe": "Low quality kasetsart public bicycle please don’t steal",
+        "lockPin" : "LOCK PIN",
+        "bikeId": "BICYCLE ID",
+        "borrowStartTime": "Borrow Start Time",
+        "returnBeforeTime": "Return Before Time",
+        "howToReturn": "How To Return Bike",
+        "howToReturnDescribeOne": "1. Go to ku-bike parking location with avaliable parking slot.",
+        "howToReturnDescribeTwo": "2. Park and lock bicycle in the slot.",
+        "howToReturnDescribeThree": "3. Press \"Scan QR Code to return bike\" button and scan QR Code on bicycle.",
+        "howToReturnDescribeFour": "4. Press \"Yes\".",
+        "scanQRcode": "Scan QR Code To Return Bike"
+    },
+    "profile": {
+        "history" : "History",
+        "bikeId" : "Bicycle ID",
+        "borrow" : "Borrow",
+        "return" : "Return",
+        "signOut" : "LOGOUT"
+
+    },
+    "qrScan": {
+        "dialog": {
+            "flashError" : "Fail to turn flash on.",
+            "confirm" : "CONFIRM",
+            "confirmBorrowDescribe" : "Do you want to borrow bicycle ID {}.",
+            "confirmReturnDescribe" : "Do you want to return bicycle ID {}.",
+            "warning": "WARNING",
+            "scanError": "Please Scan QRcode again.",
+            "qrError": "Invalid QRCode.",
+            "no": "NO",
+            "yes": "YES",
+            "borrowError": "Fail to Borrow a bicycle, Please try again later."
+        }
+    },
+    "map": {
+        "availableParking": "Available Parking Slot",
+        "availableBicycle": "Available Bicycle",
+        "back": "Back",
+        "dialog" : {
+            "showHubDetailFail": "Fail to show hub detail."
+        }
+    },
+    "setting": {
+        "setting":"Settings",
+        "language": "Language",
+        "languageDescribe": "Change Language to English"
+    },
+    "dialog": {
+        "yes": "YES",
+        "no": "NO",
+        "locationOff": "Location service is disable, Please enable it before using \"KU-BIKE\" press \"Yes\" to go phone settings",
+        "locationNoPermission": "KU-BIKE have no permission to access Location service, please press \"Yes\", to give allow to access",
+        "connectError" : "Can't connect to the backend service, Please try again later."
+
+    }
+}

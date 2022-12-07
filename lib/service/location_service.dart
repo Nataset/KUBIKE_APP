@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -101,22 +102,21 @@ class LocationService {
       await showDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
-          title: Text("ERROR"),
-          content: Text(
-              'Location Service ปิดอยู่โปรดเปิดก่อนใช้งาน "KU-BIKE", กด "ตกลง" เพื่อเข้าสู่หน้าตั้งค่า'),
+          title: const Text("ERROR"),
+          content: const Text('dialog.locationOff').tr(),
           actions: [
             CupertinoDialogAction(
-              child: Text(
-                'ไม่ตกลง',
-              ),
+              child: const Text(
+                'dialog.no',
+              ).tr(),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             CupertinoDialogAction(
-              child: Text(
-                'ตกลง',
-              ),
+              child: const Text(
+                'dialog.yes',
+              ).tr(),
               onPressed: () async {
                 Navigator.of(context).pop();
                 await Geolocator.openLocationSettings();
@@ -132,22 +132,21 @@ class LocationService {
       await showDialog<bool>(
         context: context,
         builder: (context) => CupertinoAlertDialog(
-          title: Text("ERROR"),
-          content: Text(
-              '"KU-BIKE" ไม่มี Permission ในการเข้าถึง Location Service ได้กรุณาให้ Permission กับ "KU-BIKE", กด "ตกลง" เพื่อเข้าสู่หน้าตั้งค่า'),
+          title: const Text("ERROR"),
+          content: const Text('dialog.locationNoPermission').tr(),
           actions: [
             CupertinoDialogAction(
-              child: Text(
-                'ไม่ตกลง',
-              ),
+              child: const Text(
+                'dialog.no',
+              ).tr(),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             CupertinoDialogAction(
-              child: Text(
-                'ตกลง',
-              ),
+              child: const Text(
+                'dialog.yes',
+              ).tr(),
               onPressed: () async {
                 Navigator.of(context).pop();
                 await Geolocator.openAppSettings();

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -23,7 +24,6 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -37,11 +37,11 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              physics: ScrollPhysics(),
+              physics: const ScrollPhysics(),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(
+                    const SizedBox(
                       height: 60,
                     ),
                     Container(
@@ -58,23 +58,24 @@ class _ProfilePageState extends State<ProfilePage> {
                             : Center(
                                 child: Text(
                                 user!.name[0],
-                                style: TextStyle(
+                                style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 60,
                                     fontWeight: FontWeight.bold),
                               ))),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     Container(
                       decoration: BoxDecoration(
                           color: Colors.grey[50],
-                          borderRadius: BorderRadius.all(Radius.circular(15))),
-                      padding: EdgeInsets.only(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(15))),
+                      padding: const EdgeInsets.only(
                         top: 20,
                         bottom: 20,
                       ),
-                      margin: EdgeInsets.only(left: 20, right: 20),
+                      margin: const EdgeInsets.only(left: 20, right: 20),
                       // color: Colors.red,
                       child: Column(children: [
                         Text(
@@ -85,8 +86,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               color: AppColor.darkGreen),
                         ),
                         Container(
-                            margin: EdgeInsets.only(bottom: 10, top: 10),
-                            padding: EdgeInsets.only(left: 30, right: 30),
+                            margin: const EdgeInsets.only(bottom: 10, top: 10),
+                            padding: const EdgeInsets.only(left: 30, right: 30),
                             child: Divider(
                               thickness: 2,
                               color: AppColor.lightGreen,
@@ -105,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         fontWeight: FontWeight.w600,
                                         color: Colors.grey[700]),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 10,
                                   ),
                                   Text(
@@ -118,7 +119,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ],
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 20,
                             ),
                             Container(
@@ -128,17 +129,17 @@ class _ProfilePageState extends State<ProfilePage> {
                                 children: [
                                   Text(
                                     user.email,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 10,
                                   ),
                                   Text(
                                     user.name,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -150,230 +151,231 @@ class _ProfilePageState extends State<ProfilePage> {
                         )
                       ]),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 30,
                     ),
                     Container(
                       width: double.infinity,
-                      padding: EdgeInsets.only(left: 30, right: 30),
+                      padding: const EdgeInsets.only(left: 30, right: 30),
                       decoration: BoxDecoration(
                           color: Colors.grey[50],
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(20),
                               topRight: Radius.circular(20))),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             height: 20,
                           ),
                           Container(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'ประวัติ',
+                              'profile.history',
                               style: GoogleFonts.kanit(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 22,
                                   color: Colors.grey[700]),
-                            ),
+                            ).tr(),
                           ),
                           Divider(
                             thickness: 2,
                             color: Colors.grey[500],
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 20,
                           ),
-                          FutureBuilder<List<dynamic>?>(
-                              future: HistoryService.fetchHistory(),
-                              builder: ((context, snapshot) {
-                                if (snapshot.hasData &&
-                                    snapshot.data!.isEmpty) {
-                                  return Container(
-                                    height: 300,
-                                  );
-                                }
-                                if (snapshot.hasData) {
-                                  return Column(
-                                    children: List.generate(
-                                      snapshot.data!.length,
-                                      (index) => Container(
-                                          padding: EdgeInsets.only(bottom: 30),
-                                          child: Container(
-                                            padding: EdgeInsets.only(
-                                                top: 10, bottom: 10),
-                                            alignment: Alignment.center,
-                                            decoration: BoxDecoration(
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                      color: Colors.grey[600]!,
-                                                      offset: Offset(0, 3),
-                                                      spreadRadius: 0,
-                                                      blurRadius: 10)
-                                                ],
-                                                // border: Border.all(
-                                                //     width: 2,
-                                                //     color: Colors.grey[500]!),
-                                                color: Colors.white,
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(15))),
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  'หมายเลขจักรยาน',
-                                                  style: GoogleFonts.kanit(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.w500),
-                                                ),
-                                                Text(
-                                                  snapshot.data![index]['bike']
-                                                      ['bike_code'],
-                                                  style: GoogleFonts.kanit(
-                                                      fontSize: 16),
-                                                ),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
+                          Stack(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                height: 200,
+                                color: Colors.grey[50],
+                              ),
+                              FutureBuilder<List<dynamic>?>(
+                                  future: HistoryService.fetchHistory(),
+                                  builder: ((context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      return Column(
+                                        children: List.generate(
+                                          snapshot.data!.length,
+                                          (index) => Container(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 30),
+                                              child: Container(
+                                                padding: const EdgeInsets.only(
+                                                    top: 10, bottom: 10),
+                                                alignment: Alignment.center,
+                                                decoration: BoxDecoration(
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color:
+                                                              Colors.grey[600]!,
+                                                          offset: Offset(0, 3),
+                                                          spreadRadius: 0,
+                                                          blurRadius: 10)
+                                                    ],
+                                                    // border: Border.all(
+                                                    //     width: 2,
+                                                    //     color: Colors.grey[500]!),
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        const BorderRadius.all(
+                                                            Radius.circular(
+                                                                15))),
+                                                child: Column(
                                                   children: [
-                                                    Container(
-                                                      margin: EdgeInsets.only(
-                                                          left: 20,
-                                                          right: 20,
-                                                          top: 10),
-                                                      decoration: BoxDecoration(
-                                                          color: AppColor.gray,
-                                                          borderRadius:
-                                                              BorderRadius.all(
-                                                                  Radius
-                                                                      .circular(
-                                                                          5))),
-                                                      child: Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceEvenly,
-                                                          children: [
-                                                            Text(
-                                                              'ยืม',
-                                                              style: GoogleFonts.kanit(
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500),
-                                                            ),
-                                                            Text(
-                                                              FormatDateTime.formatDay(
-                                                                  DateTime.parse(
-                                                                      snapshot.data![
-                                                                              index]
-                                                                          [
-                                                                          'borrow_at'])),
-                                                              style: GoogleFonts.kanit(
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500),
-                                                            ),
-                                                            Text(
-                                                              FormatDateTime.formatTime(
-                                                                  DateTime.parse(
-                                                                      snapshot.data![
-                                                                              index]
-                                                                          [
-                                                                          'borrow_at'])),
-                                                              style: GoogleFonts.kanit(
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500),
-                                                            )
-                                                          ]),
+                                                    Text(
+                                                      'profile.bikeId',
+                                                      style: GoogleFonts.kanit(
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.w500),
+                                                    ).tr(),
+                                                    Text(
+                                                      snapshot.data![index]
+                                                          ['bike']['bike_code'],
+                                                      style: GoogleFonts.kanit(
+                                                          fontSize: 16),
                                                     ),
-                                                    if (snapshot.data![index]
-                                                            ['return_at'] !=
-                                                        null)
-                                                      Container(
-                                                        margin: EdgeInsets.only(
-                                                            left: 20,
-                                                            right: 20,
-                                                            top: 5),
-                                                        decoration: BoxDecoration(
-                                                            color:
-                                                                AppColor.gray,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .all(Radius
-                                                                        .circular(
-                                                                            5))),
-                                                        child: Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceEvenly,
-                                                            children: [
-                                                              Text(
-                                                                'คืน',
-                                                                style: GoogleFonts.kanit(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500),
-                                                              ),
-                                                              Text(
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Container(
+                                                          margin:
+                                                              const EdgeInsets
+                                                                      .only(
+                                                                  left: 20,
+                                                                  right: 20,
+                                                                  top: 10),
+                                                          decoration: BoxDecoration(
+                                                              color:
+                                                                  AppColor.gray,
+                                                              borderRadius:
+                                                                  const BorderRadius
+                                                                          .all(
+                                                                      Radius.circular(
+                                                                          5))),
+                                                          child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceEvenly,
+                                                              children: [
+                                                                Text(
+                                                                  'profile.borrow',
+                                                                  style: GoogleFonts.kanit(
+                                                                      color: Colors
+                                                                          .white,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500),
+                                                                ).tr(),
+                                                                Text(
                                                                   FormatDateTime.formatDay(
                                                                       DateTime.parse(
                                                                           snapshot.data![index]
                                                                               [
-                                                                              'return_at'])),
+                                                                              'borrow_at'])),
                                                                   style: GoogleFonts.kanit(
                                                                       color: Colors
                                                                           .white,
                                                                       fontWeight:
                                                                           FontWeight
-                                                                              .w500)),
-                                                              Text(
+                                                                              .w500),
+                                                                ),
+                                                                Text(
                                                                   FormatDateTime.formatTime(
                                                                       DateTime.parse(
                                                                           snapshot.data![index]
                                                                               [
-                                                                              'return_at'])),
+                                                                              'borrow_at'])),
                                                                   style: GoogleFonts.kanit(
                                                                       color: Colors
                                                                           .white,
                                                                       fontWeight:
                                                                           FontWeight
-                                                                              .w500))
-                                                            ]),
-                                                      ),
+                                                                              .w500),
+                                                                )
+                                                              ]),
+                                                        ),
+                                                        if (snapshot.data![
+                                                                    index]
+                                                                ['return_at'] !=
+                                                            null)
+                                                          Container(
+                                                            margin:
+                                                                EdgeInsets.only(
+                                                                    left: 20,
+                                                                    right: 20,
+                                                                    top: 5),
+                                                            decoration: BoxDecoration(
+                                                                color: AppColor
+                                                                    .gray,
+                                                                borderRadius: BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            5))),
+                                                            child: Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .spaceEvenly,
+                                                                children: [
+                                                                  Text(
+                                                                    'profile.return',
+                                                                    style: GoogleFonts.kanit(
+                                                                        color: Colors
+                                                                            .white,
+                                                                        fontWeight:
+                                                                            FontWeight.w500),
+                                                                  ).tr(),
+                                                                  Text(
+                                                                      FormatDateTime.formatDay(DateTime.parse(
+                                                                          snapshot.data![index]
+                                                                              [
+                                                                              'return_at'])),
+                                                                      style: GoogleFonts.kanit(
+                                                                          color: Colors
+                                                                              .white,
+                                                                          fontWeight:
+                                                                              FontWeight.w500)),
+                                                                  Text(
+                                                                      FormatDateTime.formatTime(DateTime.parse(
+                                                                          snapshot.data![index]
+                                                                              [
+                                                                              'return_at'])),
+                                                                      style: GoogleFonts.kanit(
+                                                                          color: Colors
+                                                                              .white,
+                                                                          fontWeight:
+                                                                              FontWeight.w500))
+                                                                ]),
+                                                          ),
+                                                      ],
+                                                    )
                                                   ],
-                                                )
-                                              ],
-                                            ),
-                                          )),
-                                    ),
-                                  );
-                                } else {
-                                  return Column(
-                                    children: [
-                                      SizedBox(
-                                        height: 70,
-                                      ),
-                                      Container(
-                                          height: 50,
-                                          width: 50,
-                                          child: CircularProgressIndicator()),
-                                      SizedBox(
-                                        height: 70,
-                                      )
-                                    ],
-                                  );
-                                }
-                              })),
+                                                ),
+                                              )),
+                                        ),
+                                      );
+                                    } else {
+                                      return Center(
+                                        child: Container(
+                                            margin:
+                                                const EdgeInsets.only(top: 40),
+                                            height: 50,
+                                            width: 50,
+                                            child:
+                                                const CircularProgressIndicator()),
+                                      );
+                                    }
+                                  }))
+                            ],
+                          ),
                         ],
                       ),
                     )
@@ -382,7 +384,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           Container(
             color: Colors.white,
-            padding: EdgeInsets.only(left: 30, right: 30, bottom: 10),
+            padding: const EdgeInsets.only(left: 30, right: 30, bottom: 10),
             child: Column(
               children: [
                 Divider(
@@ -391,7 +393,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        minimumSize: Size.fromHeight(50),
+                        minimumSize: const Size.fromHeight(50),
                         backgroundColor: AppColor.red,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
@@ -401,9 +403,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     onPressed: () {
                       signOutHandle(context: context);
                     },
-                    child: Text('ออกจากระบบ',
-                        style: GoogleFonts.kanit(
-                            color: Colors.white, fontWeight: FontWeight.w500))),
+                    child: Text('profile.signOut',
+                            style: GoogleFonts.kanit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500))
+                        .tr()),
               ],
             ),
           ),

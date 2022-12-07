@@ -1,0 +1,82 @@
+{
+    "home": {
+        "map" : "แผนที่",
+        "bicycle": "จักรยาน",
+        "profile": "ข้อมูลส่วนตัว",
+        "setting": "ตั้งค่า"
+    },
+    "login": {
+        "welcome": "ยินดีตอนรับสู่ KU BIKE",
+        "welcomeDescribe": "กรุณา Login โดยใช้ Kasetsart Google account เพื่อใช้งาน",
+        "loginGoogle": "เข้าสู่ระบบด้วย Google",
+        "loginNontri": "เข้าสู่ระบบด้วย Nontri",
+        "dialog": {
+            "connectError" : "ไม่สามารถเชื่อต่อกับระบบได้, กรุณาลองอีกครั้งภายหลัง",
+            "nontriError" : "ระบบนี้ยังอยู่ระหว่างการพัฒนา",
+            "googleError" : "เข้าสู่ระบบด้วยบัญชี Google ล้มเหลว"
+        }
+    },
+    "map": {
+        "availableParking": "ที่จอดจักรยานที่ว่างอยู่",
+        "availableBicycle": "จักรยานที่สามารถยืมได้",
+        "back": "กลับ",
+        "dialog" : {
+            "showHubDetailFail": "ไม่สามารถแสดงรายเอียดจุดจอดได้"
+        }
+    },
+    "bikeBorrow": {
+        "notFound": "ไม่พบจักรยาน",
+        "notBorrow": "คุณยังไม่ได้ยืมจักรยาน",
+        "borrowDescribe" : "โปรดไปที่จุดให้ยืมจักรยานในมหาลัยเกษตรบางเขตและกดปุ่ม \"สแกน QRCode เพื่อยืมจักรยาน\" ด้านล่างเพื่อทำการเริ่มยืมจักรยาน",
+        "mapDescribe": "คุณสามารถดูจุดให้ยืมจักรยานได้ในหน้าแผนที่",
+        "qrCode": "สแกน QRCode เพื่อยืมจักรยาน"
+    },
+    "bikeReturn": {
+        "detail": "รายละเอียด",
+        "bikeDescribe": "จักรยานพื้นฐานของมหาวิทยาลัยเกษตรศาสตร์ สามารถยืมได้แค่บุคลากรในมหาลัยเท่านั้น",
+        "lockPin" : "รหัสล็อกจักรยาน",
+        "bikeId": "รหัสจักรยาน",
+        "borrowStartTime": "เวลาที่เริ่มยืม",
+        "returnBeforeTime": "ต้องคืนก่อนเวลา",
+        "howToReturn": "วิธีการคืนจักรยาน",
+        "howToReturnDescribeOne": "1. นำจักรยานไปจุดจอดจักรยานที่มีที่จองเหลืออยู่",
+        "howToReturnDescribeTwo": "2. จอดจักรยานในช่องจอดที่ว่างอยู่และล็อกจักรยานให้เรียนร้อย",
+        "howToReturnDescribeThree": "3. กดปุ่ม \"สแกน QRCode เพื่อคืนจักรยาน\" และทำการสแกน QRCode ที่ตัวจักรยาน",
+        "howToReturnDescribeFour": "4. กดปุ่ม \"ยืนยัน\"",
+        "scanQRcode": "สแกน QRCode เพื่อคืนจักรยาน"
+    },
+    "profile": {
+        "history" : "ประวัติ",
+        "bikeId" : "หมายเลขจักรยาน",
+        "borrow" : "ยืม",
+        "return" : "คืน",
+        "signOut" : "ออกจากระบบ"
+
+    },
+    "qrScan": {
+        "dialog": {
+            "flashError" : "โทรศัพท์มือถือไม่สามารถเปิด Flash ได้",
+            "confirm" : "ยินยัน",
+            "confirmBorrowDescribe" : "คุณจะยืมจักรยานหมายเลข {} จริงหรือไม่",
+            "confirmReturnDescribe" : "คุณจะคืนจักรยานหมายเลข {} จริงหรือไม่",
+            "warning": "คำเตือน",
+            "scanError": "โปรดสแกน QRCode ใหม่อีกครั้ง",
+            "qrError": "QRCode ไม่ถูกต้อง",
+            "no": "ไม่",
+            "yes": "ใช่",
+            "borrowError": "ไม่สามารถยืมจักรยานได้ กรุณาลองใหม่อีกครั้ง"
+        }
+    },
+    "setting": {
+        "setting": "ตั้งค่า",
+        "language": "ภาษา",
+        "languageDescribe": "เปลี่ยนเป็นภาษาอังกฤษ"
+    },
+    "dialog": {
+        "yes": "ตกลง",
+        "no": "ไม่ตกลง",
+        "locationOff": "Location Service ปิดอยู่โปรดเปิดก่อนใช้งาน \"KU-BIKE\", กด\"ตกลง\" เพื่อเข้าสู่หน้าตั้งค่า",
+        "locationNoPermission": "\"KU-BIKE\" ไม่มี Permission ในการเข้าถึง Location Service ได้กรุณาให้ Permission กับ \"KU-BIK\", กด \"ตกลง\" ให้ Permission",
+        "connectError" : "ไม่สามารถเชื่อต่อกับระบบได้, กรุณาลองอีกครั้งภายหลัง"
+    }
+}

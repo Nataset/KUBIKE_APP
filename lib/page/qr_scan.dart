@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
@@ -30,7 +31,7 @@ class _QRScanPageState extends State<QRScanPage> {
   QRViewController? qrController;
   Barcode? _barcode;
   late bool _isBorrow;
-  bool QrBeingProcessed = false;
+  bool qrBeingProcessed = false;
 
   @override
   void initState() {
@@ -71,7 +72,7 @@ class _QRScanPageState extends State<QRScanPage> {
   }
 
   Widget buildControlButtons() => Container(
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
             color: Colors.white24, borderRadius: BorderRadius.circular(8)),
         child: Row(
@@ -87,8 +88,8 @@ class _QRScanPageState extends State<QRScanPage> {
                     showDialog(
                       context: context,
                       builder: (context) => CupertinoAlertDialog(
-                        title: Text("ERROR"),
-                        content: Text('โทรศัพท์มือถือไม่สามารถเปิด Flash ได้'),
+                        title: const Text("ERROR"),
+                        content: const Text('qrScan.dialog.flashError').tr(),
                         actions: [
                           CupertinoDialogAction(
                             child: Text(
@@ -114,7 +115,7 @@ class _QRScanPageState extends State<QRScanPage> {
                           color: Colors.white,
                         );
                       } else {
-                        return Icon(
+                        return const Icon(
                           Icons.flash_off,
                           color: Colors.white,
                         );
@@ -125,7 +126,7 @@ class _QRScanPageState extends State<QRScanPage> {
                   await qrController!.flipCamera();
                   setState(() {});
                 },
-                icon: Icon(
+                icon: const Icon(
                   Icons.switch_camera,
                   color: Colors.white,
                 )),
@@ -134,13 +135,13 @@ class _QRScanPageState extends State<QRScanPage> {
       );
 
   Widget buildResult() => Container(
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
             color: Colors.white24, borderRadius: BorderRadius.circular(8)),
         child: Text(
           _barcode != null ? 'Result: ${_barcode!.code}' : 'Scan a code!',
           maxLines: 3,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
       );
 
@@ -155,29 +156,31 @@ class _QRScanPageState extends State<QRScanPage> {
             cutOutSize: MediaQuery.of(context).size.width * 0.8),
       );
 
-  Future<void> borrowHandle(barcode, currentPosition, bikeProvider) async {
-    bool _willBorrow = false;
+  Future<void> borrowHandle(barcode, currentPosition, bikeProvider,
+      NavigatorState navigatorState) async {
+    bool willBorrow = false;
     await showDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: Text("CONFIRM"),
-        content: Text('คุณจะยืมจักรยานหมายเลข ${barcode.code} จริงหรือไม่'),
+        title: const Text("qrScan.dialog.confirm").tr(),
+        content: const Text('qrScan.dialog.confirmBorrowDescribe')
+            .tr(args: ['${barcode.code}']),
         actions: [
           CupertinoDialogAction(
-            child: Text(
-              'ไม่',
-            ),
+            child: const Text(
+              'qrScan.dialog.no',
+            ).tr(),
             onPressed: () {
-              _willBorrow = false;
+              willBorrow = false;
               Navigator.of(context, rootNavigator: true).pop('dialog');
             },
           ),
           CupertinoDialogAction(
-            child: Text(
-              'ใช่',
-            ),
+            child: const Text(
+              'qrScan.dialog.yes',
+            ).tr(),
             onPressed: () {
-              _willBorrow = true;
+              willBorrow = true;
               Navigator.of(context, rootNavigator: true).pop('dialog');
             },
           )
@@ -185,22 +188,22 @@ class _QRScanPageState extends State<QRScanPage> {
       ),
     );
 
-    if (_willBorrow) {
+    if (willBorrow) {
       try {
         await BikeService.borrowBike(
             bikeCode: barcode.code!,
             currentPosition: currentPosition!,
             bikeProvider: bikeProvider);
-        Navigator.of(context).pop();
+        navigatorState.pop();
       } on BikeApiException catch (e) {
         await showDialog(
           context: context,
           builder: (context) => CupertinoAlertDialog(
-            title: Text("ERROR"),
+            title: const Text("ERROR"),
             content: Text('${e.message}'),
             actions: [
               CupertinoDialogAction(
-                child: Text(
+                child: const Text(
                   'OK',
                 ),
                 onPressed: () {
@@ -215,11 +218,11 @@ class _QRScanPageState extends State<QRScanPage> {
         await showDialog(
           context: context,
           builder: (context) => CupertinoAlertDialog(
-            title: Text("ERROR"),
-            content: Text('ไม่สามารถยืมจักรยานได้ กรุณาลองใหม่อีกครั้ง'),
+            title: const Text("ERROR"),
+            content: const Text('qrScan.dialog.borrowError').tr(),
             actions: [
               CupertinoDialogAction(
-                child: Text(
+                child: const Text(
                   'OK',
                 ),
                 onPressed: () {
@@ -233,20 +236,22 @@ class _QRScanPageState extends State<QRScanPage> {
     }
   }
 
-  Future<void> returnHandle(barcode, currentPosition, bikeProvider) async {
-    bool _willReturn = false;
+  Future<void> returnHandle(barcode, currentPosition, bikeProvider,
+      NavigatorState navigatorState) async {
+    bool willReturn = false;
     await showDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: Text("CONFIRM"),
-        content: Text('คุณจะคินจักรยานหมายเลข ${barcode.code} จริงหรือไม่'),
+        title: const Text("qrScan.dialog.confirm").tr(),
+        content: const Text('qrScan.dialog.confirmReturnDescribe')
+            .tr(args: ['${barcode.code}']),
         actions: [
           CupertinoDialogAction(
             child: Text(
               'ไม่',
             ),
             onPressed: () {
-              _willReturn = false;
+              willReturn = false;
               Navigator.of(context, rootNavigator: true).pop('dialog');
             },
           ),
@@ -255,7 +260,7 @@ class _QRScanPageState extends State<QRScanPage> {
               'ใช่',
             ),
             onPressed: () {
-              _willReturn = true;
+              willReturn = true;
               Navigator.of(context, rootNavigator: true).pop('dialog');
             },
           )
@@ -263,7 +268,7 @@ class _QRScanPageState extends State<QRScanPage> {
       ),
     );
 
-    if (_willReturn) {
+    if (willReturn) {
       try {
         // showLoading(context: context);
         await BikeService.returnBike(
@@ -271,16 +276,16 @@ class _QRScanPageState extends State<QRScanPage> {
             currentPosition: currentPosition!,
             bikeProvider: bikeProvider);
         // unshowLoading(context: context);
-        Navigator.of(context).pop();
+        navigatorState.pop();
       } on BikeApiException catch (e) {
         await showDialog(
           context: context,
           builder: (context) => CupertinoAlertDialog(
-            title: Text("ERROR"),
+            title: const Text("ERROR"),
             content: Text('${e.message}'),
             actions: [
               CupertinoDialogAction(
-                child: Text(
+                child: const Text(
                   'OK',
                 ),
                 onPressed: () {
@@ -296,11 +301,11 @@ class _QRScanPageState extends State<QRScanPage> {
         await showDialog(
           context: context,
           builder: (context) => CupertinoAlertDialog(
-            title: Text("ERROR"),
-            content: Text('ไม่สามารถคืนจักรยานได้ กรุณาลองใหม่อีกครั้ง'),
+            title: const Text("ERROR"),
+            content: const Text('qrScan.dialog.borrowError'),
             actions: [
               CupertinoDialogAction(
-                child: Text(
+                child: const Text(
                   'OK',
                 ),
                 onPressed: () {
@@ -320,20 +325,23 @@ class _QRScanPageState extends State<QRScanPage> {
       _barcode = barcode;
     });
     if (validateQrCode(barcode) && mounted) {
+      final navigatorState = Navigator.of(context);
       Position? currentPosition =
           await LocationService.determinePosition(context);
 
       if (currentPosition == null) {
         await showAppDialog(
             context: context,
-            title: 'คำเตือน',
-            content: 'โปรดสแกน QRCode ใหม่อีกครั้ง');
+            title: 'qrScan.dialog.warning'.tr(),
+            content: 'qrScan.dialog.scanError');
         return;
       }
       if (!_isBorrow) {
-        await borrowHandle(barcode, currentPosition, bikeProvider);
+        await borrowHandle(
+            barcode, currentPosition, bikeProvider, navigatorState);
       } else {
-        await returnHandle(barcode, currentPosition, bikeProvider);
+        await returnHandle(
+            barcode, currentPosition, bikeProvider, navigatorState);
       }
     } else {
       // pop loading
@@ -341,11 +349,11 @@ class _QRScanPageState extends State<QRScanPage> {
       await showDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
-          title: Text("ERROR"),
-          content: Text('QRCode ไม่ถูกต้อง'),
+          title: const Text("ERROR"),
+          content: const Text('.qrScan.dialog.qrError').tr(),
           actions: [
             CupertinoDialogAction(
-              child: Text(
+              child: const Text(
                 'OK',
               ),
               onPressed: () {
@@ -365,11 +373,11 @@ class _QRScanPageState extends State<QRScanPage> {
 
     late StreamSubscription streamSub;
     streamSub = controller.scannedDataStream.listen((barcode) async {
-      if (!QrBeingProcessed) {
-        QrBeingProcessed = true;
+      if (!qrBeingProcessed) {
+        qrBeingProcessed = true;
         await barcodeHandle(barcode, streamSub, controller, bikeProvider);
-        await Future.delayed(Duration(seconds: 1));
-        QrBeingProcessed = false;
+        await Future.delayed(const Duration(seconds: 1));
+        qrBeingProcessed = false;
       }
     });
   }

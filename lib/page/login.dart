@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart';
 import 'package:kubike_app/page/home.dart';
@@ -30,8 +32,7 @@ class _LoginPageState extends State<LoginPage> {
         context: context,
         builder: (context) => CupertinoAlertDialog(
           title: Text("Error"),
-          content: Text(
-              "Can't connect to the backend service, Please try again later"),
+          content: Text("login.dialog.connectError").tr(),
           actions: [
             CupertinoDialogAction(
               child: Text(
@@ -95,17 +96,18 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(
                         height: 60,
                       ),
-                      Text('ยินดีตอนรับสู่ KU BIKE',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 32,
-                              color: AppColor.darkGreen)),
+                      Text('login.welcome',
+                              style: GoogleFonts.kanit(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 32,
+                                  color: AppColor.darkGreen))
+                          .tr(),
                       SizedBox(height: 16),
                       Text(
-                        'กรุณา Login โดยใช้ Kasetsart Google account เพื่อใช้งาน',
-                        style:
-                            TextStyle(color: AppColor.darkGreen, fontSize: 16),
-                      ),
+                        'login.welcomeDescribe',
+                        style: GoogleFonts.kanit(
+                            color: AppColor.darkGreen, fontSize: 16),
+                      ).tr(),
                       const SizedBox(height: 60),
                       OutlinedButton(
                           style: OutlinedButton.styleFrom(
@@ -121,10 +123,10 @@ class _LoginPageState extends State<LoginPage> {
                           },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: const [
-                              Icon(FontAwesomeIcons.google),
-                              Text('Login with Google'),
-                              SizedBox(
+                            children: [
+                              const Icon(FontAwesomeIcons.google),
+                              const Text('login.loginGoogle').tr(),
+                              const SizedBox(
                                 width: 20,
                               )
                             ],
@@ -135,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
                       Row(children: [
                         Expanded(child: Divider(color: Colors.grey[600])),
                         Padding(
-                          padding: EdgeInsets.only(left: 10, right: 10),
+                          padding: const EdgeInsets.only(left: 10, right: 10),
                           child: Text(
                             "or",
                             style: TextStyle(color: Colors.grey[500]),
@@ -143,7 +145,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         Expanded(child: Divider(color: Colors.grey[600])),
                       ]),
-                      SizedBox(
+                      const SizedBox(
                         height: 25,
                       ),
                       OutlinedButton(
@@ -164,13 +166,13 @@ class _LoginPageState extends State<LoginPage> {
                           },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: const [
-                              Text('KU',
+                            children: [
+                              const Text('KU',
                                   style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w900)),
-                              Text('Login with Nontri'),
-                              SizedBox(
+                              const Text('login.loginNontri').tr(),
+                              const SizedBox(
                                 width: 20,
                               )
                             ],
@@ -204,12 +206,11 @@ class _LoginPageState extends State<LoginPage> {
       showDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
-          title: Text("Error"),
-          content: Text(
-              "Can't connect to the backend service, Please try again later"),
+          title: const Text("Error"),
+          content: const Text("login.connectError").tr(),
           actions: [
             CupertinoDialogAction(
-              child: Text(
+              child: const Text(
                 'OK',
               ),
               onPressed: () {
@@ -225,11 +226,11 @@ class _LoginPageState extends State<LoginPage> {
       showDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
-          title: Text("Error"),
-          content: Text('Login with Google Account Fail'),
+          title: const Text("Error"),
+          content: const Text('Login with Google Account Fail'),
           actions: [
             CupertinoDialogAction(
-              child: Text(
+              child: const Text(
                 'OK',
               ),
               onPressed: () {

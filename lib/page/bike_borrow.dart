@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -23,7 +24,7 @@ class _BikeBorrowPageState extends State<BikeBorrowPage> {
           child: SingleChildScrollView(
             child: Container(
               width: double.infinity,
-              padding: EdgeInsets.all(30),
+              padding: const EdgeInsets.all(30),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -32,33 +33,33 @@ class _BikeBorrowPageState extends State<BikeBorrowPage> {
                       height: 300,
                       child: Center(
                         child: Text(
-                          'NOT FOUND',
+                          'bikeBorrow.notFound',
                           style: TextStyle(
                               fontSize: 40,
                               color: Colors.grey[700],
                               fontWeight: FontWeight.w500),
-                        ),
+                        ).tr(),
                       ),
                     ),
                     Text(
-                      'คุณยังไม่ได้ยืมจักรยาน',
+                      'bikeBorrow.notBorrow',
                       style: GoogleFonts.kanit(
                           color: Colors.grey[700],
                           fontWeight: FontWeight.w500,
                           fontSize: 20),
-                    ),
-                    SizedBox(
+                    ).tr(),
+                    const SizedBox(
                       height: 20,
                     ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text(
-                            "โปรดไปที่จุดให้ยืมจักรยานในมหาลัยเกษตรบางเขตและกดปุ่ม \"สแกน QRCode เพื่อยืมจักรยาน\" ด้านล่างเพื่อทำการเริ่มยืมจักรยาน",
-                            style: GoogleFonts.kanit(
-                                color: Colors.grey[700],
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(
+                        Text("bikeBorrow.borrowDescribe",
+                                style: GoogleFonts.kanit(
+                                    color: Colors.grey[700],
+                                    fontWeight: FontWeight.w500))
+                            .tr(),
+                        const SizedBox(
                           height: 20,
                         ),
                         Icon(
@@ -66,10 +67,11 @@ class _BikeBorrowPageState extends State<BikeBorrowPage> {
                           size: 40,
                           color: Colors.grey[800],
                         ),
-                        Text("คุณสามารถดูจุดให้ยืมจักรยานได้ในหน้าแผนที่",
-                            style: GoogleFonts.kanit(
-                                color: Colors.grey[700],
-                                fontWeight: FontWeight.w500)),
+                        Text("bikeBorrow.mapDescribe",
+                                style: GoogleFonts.kanit(
+                                    color: Colors.grey[700],
+                                    fontWeight: FontWeight.w500))
+                            .tr(),
                       ],
                     )
                   ]),
@@ -77,11 +79,11 @@ class _BikeBorrowPageState extends State<BikeBorrowPage> {
           ),
         ),
         Container(
-          margin: EdgeInsets.only(bottom: 10),
-          padding: EdgeInsets.only(left: 30, right: 30),
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.only(left: 30, right: 30),
           child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size.fromHeight(50),
+                  minimumSize: const Size.fromHeight(50),
                   backgroundColor: Colors.blue[800],
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
@@ -91,9 +93,10 @@ class _BikeBorrowPageState extends State<BikeBorrowPage> {
               onPressed: () {
                 QRcodeScanHandle(context: context);
               },
-              child: Text('สแกน QRCode เพื่อยืมจักรยาน',
-                  style: GoogleFonts.kanit(
-                      color: Colors.white, fontWeight: FontWeight.w500))),
+              child: Text('bikeBorrow.qrCode',
+                      style: GoogleFonts.kanit(
+                          color: Colors.white, fontWeight: FontWeight.w500))
+                  .tr()),
         ),
       ],
     ));
