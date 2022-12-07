@@ -95,14 +95,14 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(
                         height: 60,
                       ),
-                      Text('Welcom to KU-Bike',
+                      Text('ยินดีตอนรับสู่ KU BIKE',
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 32,
                               color: AppColor.darkGreen)),
                       SizedBox(height: 16),
                       Text(
-                        'Please Login to your Kasetsart account to continue',
+                        'กรุณา Login โดยใช้ Kasetsart Google account เพื่อใช้งาน',
                         style:
                             TextStyle(color: AppColor.darkGreen, fontSize: 16),
                       ),

@@ -68,7 +68,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     Container(
                       decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Colors.grey[50],
                           borderRadius: BorderRadius.all(Radius.circular(15))),
                       padding: EdgeInsets.only(
                         top: 20,
@@ -157,7 +157,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       width: double.infinity,
                       padding: EdgeInsets.only(left: 30, right: 30),
                       decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Colors.grey[50],
                           borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(20),
                               topRight: Radius.circular(20))),
@@ -181,6 +181,9 @@ class _ProfilePageState extends State<ProfilePage> {
                             thickness: 2,
                             color: Colors.grey[500],
                           ),
+                          SizedBox(
+                            height: 20,
+                          ),
                           FutureBuilder<List<dynamic>?>(
                               future: HistoryService.fetchHistory(),
                               builder: ((context, snapshot) {
@@ -195,13 +198,23 @@ class _ProfilePageState extends State<ProfilePage> {
                                     children: List.generate(
                                       snapshot.data!.length,
                                       (index) => Container(
-                                          padding: EdgeInsets.only(bottom: 10),
+                                          padding: EdgeInsets.only(bottom: 30),
                                           child: Container(
                                             padding: EdgeInsets.only(
                                                 top: 10, bottom: 10),
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
-                                                color: Colors.grey[350],
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                      color: Colors.grey[600]!,
+                                                      offset: Offset(0, 3),
+                                                      spreadRadius: 0,
+                                                      blurRadius: 10)
+                                                ],
+                                                // border: Border.all(
+                                                //     width: 2,
+                                                //     color: Colors.grey[500]!),
+                                                color: Colors.white,
                                                 borderRadius: BorderRadius.all(
                                                     Radius.circular(15))),
                                             child: Column(
@@ -236,7 +249,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                               BorderRadius.all(
                                                                   Radius
                                                                       .circular(
-                                                                          10))),
+                                                                          5))),
                                                       child: Row(
                                                           mainAxisAlignment:
                                                               MainAxisAlignment
@@ -244,9 +257,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                                           children: [
                                                             Text(
                                                               'ยืม',
-                                                              style: TextStyle(
+                                                              style: GoogleFonts.kanit(
                                                                   color: Colors
-                                                                      .white),
+                                                                      .white,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500),
                                                             ),
                                                             Text(
                                                               FormatDateTime.formatDay(
@@ -255,9 +271,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                               index]
                                                                           [
                                                                           'borrow_at'])),
-                                                              style: TextStyle(
+                                                              style: GoogleFonts.kanit(
                                                                   color: Colors
-                                                                      .white),
+                                                                      .white,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500),
                                                             ),
                                                             Text(
                                                               FormatDateTime.formatTime(
@@ -266,9 +285,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                               index]
                                                                           [
                                                                           'borrow_at'])),
-                                                              style: TextStyle(
+                                                              style: GoogleFonts.kanit(
                                                                   color: Colors
-                                                                      .white),
+                                                                      .white,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500),
                                                             )
                                                           ]),
                                                     ),
@@ -287,7 +309,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                 BorderRadius
                                                                     .all(Radius
                                                                         .circular(
-                                                                            10))),
+                                                                            5))),
                                                         child: Row(
                                                             mainAxisAlignment:
                                                                 MainAxisAlignment
@@ -297,7 +319,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                 'คืน',
                                                                 style: GoogleFonts.kanit(
                                                                     color: Colors
-                                                                        .white),
+                                                                        .white,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500),
                                                               ),
                                                               Text(
                                                                   FormatDateTime.formatDay(
@@ -307,7 +332,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                               'return_at'])),
                                                                   style: GoogleFonts.kanit(
                                                                       color: Colors
-                                                                          .white)),
+                                                                          .white,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500)),
                                                               Text(
                                                                   FormatDateTime.formatTime(
                                                                       DateTime.parse(
@@ -316,7 +344,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                               'return_at'])),
                                                                   style: GoogleFonts.kanit(
                                                                       color: Colors
-                                                                          .white))
+                                                                          .white,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500))
                                                             ]),
                                                       ),
                                                   ],

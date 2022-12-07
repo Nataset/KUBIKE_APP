@@ -3,17 +3,14 @@ import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:kubike_app/exception/location_permission_exception.dart';
+import 'package:flutter_compass/flutter_compass.dart';
 import 'package:kubike_app/model/hub_model.dart';
 import 'package:kubike_app/provider/map_provider.dart';
 import 'package:kubike_app/service/hub_service.dart';
-import 'package:kubike_app/service/location_service.dart';
 import 'package:kubike_app/share/color.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
@@ -30,109 +27,41 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   List<Hub> _hubs = [];
-  late bool _isError = false;
+  bool _isError = false;
   final LatLng _mapDefaultPosition = LatLng(13.8478, 100.5725);
   late final MapController _mapController;
+  bool _isLocationServiceEnabled = false;
 
   MapPosition? _lastPosition;
-  // bool _isLocationStart = false;
 
   late CenterOnLocationUpdate _centerOnLocationUpdate;
   late StreamController<double?> _centerCurrentLocationStreamController;
+  late StreamSubscription<ServiceStatus> _serviceStatusStream;
 
-  // void startCurrentLocation() {
-  //   streamSubscription?.cancel();
-  //   _subscriptPositionStream();
-  //   setState(() {
-  //     _isLocationStart = true;
-  //   });
-  // }
+  late Stream<LocationMarkerPosition> _positionStream;
+  late Stream<LocationMarkerHeading> _headingStream;
+  late StreamSubscription<LocationMarkerPosition> _positionStreamSub;
+  late StreamSubscription<LocationMarkerHeading> _headingStreamSub;
 
-  // void stopCurrentLocation() {
-  //   streamSubscription?.cancel();
-  //   setState(() {
-  //     _isLocationStart = false;
-  //   });
-  // }
+  Future<bool> checkLocationEnable() async {
+    bool isEnable = false;
+    final result = await Future.wait(
+        [Geolocator.isLocationServiceEnabled(), Geolocator.checkPermission()]);
 
-  Future<bool> checkLocation() async {
-    try {
-      await LocationService.checkPermission();
-      // } on LocationDisabledException catch (e) {
-      //   await showDialog(
-      //     context: context,
-      //     builder: (context) => CupertinoAlertDialog(
-      //       title: Text("ERROR"),
-      //       content: Text(
-      //           'Location Service ปิดอยู่โปรดเปิดก่อนใช้งาน "KU-BIKE", กด "ตกลง" เพื่อเข้าสู่หน้าตั้งค่า'),
-      //       actions: [
-      //         CupertinoDialogAction(
-      //           child: Text(
-      //             'ไม่ตกลง',
-      //           ),
-      //           onPressed: () {
-      //             Navigator.of(context).pop();
-      //           },
-      //         ),
-      //         CupertinoDialogAction(
-      //           child: Text(
-      //             'ตกลง',
-      //           ),
-      //           onPressed: () async {
-      //             Navigator.of(context).pop();
-      //             await Geolocator.openLocationSettings();
-      //           },
-      //         ),
-      //       ],
-      //     ),
-      //   );
-      //   return false;
-    } on LocationPermissionException catch (e) {
-      await showDialog<bool>(
-        context: context,
-        builder: (context) => CupertinoAlertDialog(
-          title: Text("ERROR"),
-          content: Text(
-              '"KU-BIKE" ไม่มี Permission ในการเข้าถึง Location Service ได้กรุณาให้ Permission กับ "KU-BIKE", กด "ตกลง" เพื่อเข้าสู่หน้าตั้งค่า'),
-          actions: [
-            CupertinoDialogAction(
-              child: Text(
-                'ไม่ตกลง',
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            CupertinoDialogAction(
-              child: Text(
-                'ตกลง',
-              ),
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await Geolocator.openAppSettings();
-              },
-            ),
-          ],
-        ),
-      );
-      return false;
+    bool locationServiceEnabled = result[0] as bool;
+    LocationPermission locationPermissionStatus =
+        result[1] as LocationPermission;
+
+    if ((locationPermissionStatus == LocationPermission.always ||
+            locationPermissionStatus == LocationPermission.whileInUse) &&
+        locationServiceEnabled == true) {
+      isEnable = true;
     }
 
-    return true;
+    return isEnable;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _mapController = MapController();
-
-    checkLocation();
-
-    _centerOnLocationUpdate = CenterOnLocationUpdate.always;
-    _centerCurrentLocationStreamController = StreamController<double?>();
-
-    _lastPosition = context.read<MapLastLocationProvider>().lastPosition;
-
+  void fetchHubs() {
     HubService.fetchHubs().then((hubs) {
       if (mounted) {
         if (hubs == null) {
@@ -146,32 +75,65 @@ class _MapPageState extends State<MapPage> {
         }
       }
     });
+  }
 
-    // positionStream = StreamController();
+  @override
+  void initState() {
+    super.initState();
 
-    // (() async {
-    //   if (await checkLocation()) {
-    //     startCurrentLocation();
-    //   }
-    // })();
+    fetchHubs();
 
-    // serviceStatusStream =
-    //     Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
-    //   if (status == ServiceStatus.enabled) {
-    //     startCurrentLocation();
-    //   } else {
-    //     stopCurrentLocation();
-    //   }
-    // });
+    _lastPosition = context.read<MapLastLocationProvider>().lastPosition;
+    _mapController = MapController();
+
+    _centerOnLocationUpdate = CenterOnLocationUpdate.never;
+    _centerCurrentLocationStreamController = StreamController<double?>();
+
+    checkLocationEnable().then((enable) {
+      setState(() {
+        _isLocationServiceEnabled = enable;
+      });
+    });
+
+    _serviceStatusStream = Geolocator.getServiceStatusStream().listen(
+      (ServiceStatus status) {
+        log(status.toString());
+        if (status == ServiceStatus.enabled) {
+          log('Location service is enabled');
+          // checkLocationEnable().then((isEnable) {
+          setState(() {
+            _isLocationServiceEnabled = true;
+          });
+        } else {
+          log('Location service is disable');
+
+          setState(() {
+            _isLocationServiceEnabled = false;
+          });
+        }
+      },
+    );
+
+    _positionStream = Geolocator.getPositionStream().map(
+      (Position position) {
+        return LocationMarkerPosition(
+          latitude: position.latitude,
+          longitude: position.longitude,
+          accuracy: position.accuracy,
+        );
+      },
+    );
+
+    log('init state run');
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
-
-    // streamSubscription?.cancel();
-    // serviceStatusStream?.cancel();
+    _serviceStatusStream?.cancel();
+    _centerCurrentLocationStreamController.close();
     super.dispose();
+
+    log('dispose status run');
   }
 
   @override
@@ -379,32 +341,152 @@ class _MapPageState extends State<MapPage> {
                 }
               }),
           nonRotatedChildren: [
-            // AttributionWidget.defaultWidget(
-            //   source: 'OpenStreetMap contributors',
-            //   onSourceTapped: null,
-            // ),
             Positioned(
+                right: 0,
+                bottom: 0,
                 child: Container(
-              child: Text('OpenStreetMap'),
-            )),
+                  color: Colors.white54,
+                  padding: EdgeInsets.only(right: 20, left: 20),
+                  child: Text(
+                    'Map Data Provided By OpenStreetMap',
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                )),
             Positioned(
                 right: 20,
                 bottom: 40,
                 child: FloatingActionButton(
-                  backgroundColor: Colors.blue[700],
-                  onPressed: () {
-                    // Automatically center the location marker on the map when location updated until user interact with the map.
-                    setState(
-                      () => _centerOnLocationUpdate =
-                          CenterOnLocationUpdate.always,
-                    );
+                  backgroundColor: _isLocationServiceEnabled
+                      ? Colors.blue[700]
+                      : Colors.white,
+                  onPressed: () async {
+                    if (!_isLocationServiceEnabled) {
+                      bool serviceEnabled;
+                      LocationPermission permission;
+
+                      serviceEnabled =
+                          await Geolocator.isLocationServiceEnabled();
+                      if (!serviceEnabled) {
+                        await showDialog(
+                          context: context,
+                          builder: (context) => CupertinoAlertDialog(
+                            title: Text("ERROR"),
+                            content: Text(
+                                'Location Service ปิดอยู่โปรดเปิดก่อนใช้งาน "KU-BIKE", กด "ตกลง" เพื่อเข้าสู่หน้าตั้งค่า'),
+                            actions: [
+                              CupertinoDialogAction(
+                                child: Text(
+                                  'ไม่ตกลง',
+                                ),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              CupertinoDialogAction(
+                                child: Text(
+                                  'ตกลง',
+                                ),
+                                onPressed: () async {
+                                  Navigator.of(context).pop();
+                                  await Geolocator.openLocationSettings();
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                        return;
+                      }
+
+                      permission = await Geolocator.checkPermission();
+                      if (permission == LocationPermission.denied) {
+                        permission = await Geolocator.requestPermission();
+                        if (permission == LocationPermission.denied) {
+                          await showDialog<bool>(
+                            context: context,
+                            builder: (context) => CupertinoAlertDialog(
+                              title: Text("ERROR"),
+                              content: Text(
+                                  '"KU-BIKE" ไม่มี Permission ในการเข้าถึง Location Service ได้กรุณาให้ Permission กับ "KU-BIKE", กด "ตกลง" ให้ Permission'),
+                              actions: [
+                                CupertinoDialogAction(
+                                  child: Text(
+                                    'ไม่ตกลง',
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                                CupertinoDialogAction(
+                                  child: Text(
+                                    'ตกลง',
+                                  ),
+                                  onPressed: () async {
+                                    Navigator.of(context).pop();
+                                    permission =
+                                        await Geolocator.requestPermission();
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                          return;
+                        }
+                      }
+
+                      if (permission == LocationPermission.deniedForever) {
+                        await showDialog<bool>(
+                          context: context,
+                          builder: (context) => CupertinoAlertDialog(
+                            title: Text("ERROR"),
+                            content: Text(
+                                '"KU-BIKE" ไม่มี Permission ในการเข้าถึง Location Service ได้กรุณาให้ Permission กับ "KU-BIKE", กด "ตกลง" ให้เข้าสู่การตั้งค่า'),
+                            actions: [
+                              CupertinoDialogAction(
+                                child: Text(
+                                  'ไม่ตกลง',
+                                ),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              CupertinoDialogAction(
+                                child: Text(
+                                  'ตกลง',
+                                ),
+                                onPressed: () async {
+                                  Navigator.of(context).pop();
+                                  await Geolocator.openAppSettings();
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                        await Geolocator.openAppSettings();
+                        return;
+                      }
+
+                      setState(() {
+                        _isLocationServiceEnabled = true;
+                      });
+                    } else {
+                      setState(
+                        () => _centerOnLocationUpdate =
+                            CenterOnLocationUpdate.always,
+                      );
+                    }
+
                     // Center the location marker on the map and zoom the map to level 18.
                     _centerCurrentLocationStreamController.add(18);
                   },
-                  child: const Icon(
-                    Icons.my_location,
-                    color: Colors.white,
-                  ),
+                  child: _isLocationServiceEnabled
+                      ? Icon(
+                          Icons.my_location,
+                          color: Colors.white,
+                        )
+                      : Icon(
+                          Icons.location_disabled,
+                          color: Colors.red,
+                        ),
                 ))
           ],
           children: [
@@ -414,24 +496,43 @@ class _MapPageState extends State<MapPage> {
               tileProvider: NetworkTileProvider(),
               userAgentPackageName: 'com.example.kubike_app',
             ),
-            // if (_isLocationStart)
-            CurrentLocationLayer(
-              // positionStream: positionStream.stream,
-              centerOnLocationUpdate: CenterOnLocationUpdate.never,
-              centerCurrentLocationStream:
-                  _centerCurrentLocationStreamController.stream,
-              turnOnHeadingUpdate: TurnOnHeadingUpdate.never,
-              style: LocationMarkerStyle(
-                marker: const DefaultLocationMarker(
-                  child: Icon(
-                    Icons.navigation,
-                    color: Colors.white,
-                  ),
+            if (_isLocationServiceEnabled)
+              CurrentLocationLayer(
+                positionStream: Geolocator.getPositionStream().map(
+                  (Position position) {
+                    return LocationMarkerPosition(
+                      latitude: position.latitude,
+                      longitude: position.longitude,
+                      accuracy: position.accuracy,
+                    );
+                  },
                 ),
-                markerSize: const Size(40, 40),
-                markerDirection: MarkerDirection.heading,
+                headingStream: FlutterCompass.events!
+                    .where((CompassEvent compassEvent) =>
+                        compassEvent.heading != null)
+                    .map((CompassEvent compassEvent) {
+                  return LocationMarkerHeading(
+                      heading: degToRadian(compassEvent.heading!),
+                      accuracy: (compassEvent.accuracy ?? pi * 0.3).clamp(
+                        pi * 0.1,
+                        pi * 0.4,
+                      ));
+                }),
+                centerOnLocationUpdate: _centerOnLocationUpdate,
+                centerCurrentLocationStream:
+                    _centerCurrentLocationStreamController.stream,
+                turnOnHeadingUpdate: TurnOnHeadingUpdate.never,
+                style: LocationMarkerStyle(
+                  marker: const DefaultLocationMarker(
+                    child: Icon(
+                      Icons.navigation,
+                      color: Colors.white,
+                    ),
+                  ),
+                  markerSize: const Size(40, 40),
+                  markerDirection: MarkerDirection.heading,
+                ),
               ),
-            ),
             MarkerLayer(
                 markers: _hubs.length > 0
                     ? List<Marker>.generate(
@@ -532,21 +633,4 @@ class _MapPageState extends State<MapPage> {
     );
     ;
   }
-
-  // void _subscriptPositionStream() {
-  //   streamSubscription = const LocationMarkerDataStreamFactory()
-  //       .geolocatorPositionStream(
-  //     stream: Geolocator.getPositionStream(
-  //       locationSettings: LocationService.getLocationSettings(),
-  //     ),
-  //   )
-  //       .handleError((error) {
-  //     print(error);
-  //   }).listen(
-  //     (position) {
-  //       log('the location is updated');
-  //       positionStream.add(position);
-  //     },
-  //   );
-  // }
 }

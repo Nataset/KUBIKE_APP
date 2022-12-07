@@ -155,8 +155,167 @@ class _QRScanPageState extends State<QRScanPage> {
             cutOutSize: MediaQuery.of(context).size.width * 0.8),
       );
 
+  Future<void> borrowHandle(barcode, currentPosition, bikeProvider) async {
+    bool _willBorrow = false;
+    await showDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: Text("CONFIRM"),
+        content: Text('คุณจะยืมจักรยานหมายเลข ${barcode.code} จริงหรือไม่'),
+        actions: [
+          CupertinoDialogAction(
+            child: Text(
+              'ไม่',
+            ),
+            onPressed: () {
+              _willBorrow = false;
+              Navigator.of(context, rootNavigator: true).pop('dialog');
+            },
+          ),
+          CupertinoDialogAction(
+            child: Text(
+              'ใช่',
+            ),
+            onPressed: () {
+              _willBorrow = true;
+              Navigator.of(context, rootNavigator: true).pop('dialog');
+            },
+          )
+        ],
+      ),
+    );
+
+    if (_willBorrow) {
+      try {
+        await BikeService.borrowBike(
+            bikeCode: barcode.code!,
+            currentPosition: currentPosition!,
+            bikeProvider: bikeProvider);
+        Navigator.of(context).pop();
+      } on BikeApiException catch (e) {
+        await showDialog(
+          context: context,
+          builder: (context) => CupertinoAlertDialog(
+            title: Text("ERROR"),
+            content: Text('${e.message}'),
+            actions: [
+              CupertinoDialogAction(
+                child: Text(
+                  'OK',
+                ),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              ),
+            ],
+          ),
+        );
+      } catch (e) {
+        print(e);
+        await showDialog(
+          context: context,
+          builder: (context) => CupertinoAlertDialog(
+            title: Text("ERROR"),
+            content: Text('ไม่สามารถยืมจักรยานได้ กรุณาลองใหม่อีกครั้ง'),
+            actions: [
+              CupertinoDialogAction(
+                child: Text(
+                  'OK',
+                ),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> returnHandle(barcode, currentPosition, bikeProvider) async {
+    bool _willReturn = false;
+    await showDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: Text("CONFIRM"),
+        content: Text('คุณจะคินจักรยานหมายเลข ${barcode.code} จริงหรือไม่'),
+        actions: [
+          CupertinoDialogAction(
+            child: Text(
+              'ไม่',
+            ),
+            onPressed: () {
+              _willReturn = false;
+              Navigator.of(context, rootNavigator: true).pop('dialog');
+            },
+          ),
+          CupertinoDialogAction(
+            child: Text(
+              'ใช่',
+            ),
+            onPressed: () {
+              _willReturn = true;
+              Navigator.of(context, rootNavigator: true).pop('dialog');
+            },
+          )
+        ],
+      ),
+    );
+
+    if (_willReturn) {
+      try {
+        // showLoading(context: context);
+        await BikeService.returnBike(
+            bikeCode: barcode.code!,
+            currentPosition: currentPosition!,
+            bikeProvider: bikeProvider);
+        // unshowLoading(context: context);
+        Navigator.of(context).pop();
+      } on BikeApiException catch (e) {
+        await showDialog(
+          context: context,
+          builder: (context) => CupertinoAlertDialog(
+            title: Text("ERROR"),
+            content: Text('${e.message}'),
+            actions: [
+              CupertinoDialogAction(
+                child: Text(
+                  'OK',
+                ),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              ),
+            ],
+          ),
+        );
+      } catch (e) {
+        print(e);
+        // unshowLoading(context: context);
+        await showDialog(
+          context: context,
+          builder: (context) => CupertinoAlertDialog(
+            title: Text("ERROR"),
+            content: Text('ไม่สามารถคืนจักรยานได้ กรุณาลองใหม่อีกครั้ง'),
+            actions: [
+              CupertinoDialogAction(
+                child: Text(
+                  'OK',
+                ),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> barcodeHandle(Barcode barcode, StreamSubscription streamSub,
-      var controller, var bikeProvider) async {
+      QRViewController controller, BikeProvider bikeProvider) async {
     setState(() {
       _barcode = barcode;
     });
@@ -172,163 +331,9 @@ class _QRScanPageState extends State<QRScanPage> {
         return;
       }
       if (!_isBorrow) {
-        bool _willBorrow = false;
-        await showDialog(
-          context: context,
-          builder: (context) => CupertinoAlertDialog(
-            title: Text("CONFIRM"),
-            content: Text('คุณจะยืมจักรยานหมายเลข ${barcode.code} จริงหรือไม่'),
-            actions: [
-              CupertinoDialogAction(
-                child: Text(
-                  'ไม่',
-                ),
-                onPressed: () {
-                  _willBorrow = false;
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-                },
-              ),
-              CupertinoDialogAction(
-                child: Text(
-                  'ใช่',
-                ),
-                onPressed: () {
-                  _willBorrow = true;
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-                },
-              )
-            ],
-          ),
-        );
-
-        if (_willBorrow) {
-          try {
-            // showLoading(context: context);
-            await BikeService.borrowBike(
-                bikeCode: barcode.code!,
-                currentPosition: currentPosition!,
-                bikeProvider: bikeProvider);
-            // unshowLoading(context: context);
-            Navigator.of(context).pop();
-          } on BikeApiException catch (e) {
-            await showDialog(
-              context: context,
-              builder: (context) => CupertinoAlertDialog(
-                title: Text("ERROR"),
-                content: Text('${e.message}'),
-                actions: [
-                  CupertinoDialogAction(
-                    child: Text(
-                      'OK',
-                    ),
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true).pop('dialog');
-                    },
-                  ),
-                ],
-              ),
-            );
-          } catch (e) {
-            print(e);
-            // unshowLoading(context: context);
-            await showDialog(
-              context: context,
-              builder: (context) => CupertinoAlertDialog(
-                title: Text("ERROR"),
-                content: Text('ไม่สามารถยืมจักรยานได้ กรุณาลองใหม่อีกครั้ง'),
-                actions: [
-                  CupertinoDialogAction(
-                    child: Text(
-                      'OK',
-                    ),
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true).pop('dialog');
-                    },
-                  ),
-                ],
-              ),
-            );
-          }
-        }
+        await borrowHandle(barcode, currentPosition, bikeProvider);
       } else {
-        bool _willReturn = false;
-        await showDialog(
-          context: context,
-          builder: (context) => CupertinoAlertDialog(
-            title: Text("CONFIRM"),
-            content: Text('คุณจะคินจักรยานหมายเลข ${barcode.code} จริงหรือไม่'),
-            actions: [
-              CupertinoDialogAction(
-                child: Text(
-                  'ไม่',
-                ),
-                onPressed: () {
-                  _willReturn = false;
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-                },
-              ),
-              CupertinoDialogAction(
-                child: Text(
-                  'ใช่',
-                ),
-                onPressed: () {
-                  _willReturn = true;
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-                },
-              )
-            ],
-          ),
-        );
-
-        if (_willReturn) {
-          try {
-            // showLoading(context: context);
-            await BikeService.returnBike(
-                bikeCode: barcode.code!,
-                currentPosition: currentPosition!,
-                bikeProvider: bikeProvider);
-            // unshowLoading(context: context);
-            Navigator.of(context).pop();
-          } on BikeApiException catch (e) {
-            await showDialog(
-              context: context,
-              builder: (context) => CupertinoAlertDialog(
-                title: Text("ERROR"),
-                content: Text('${e.message}'),
-                actions: [
-                  CupertinoDialogAction(
-                    child: Text(
-                      'OK',
-                    ),
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true).pop('dialog');
-                    },
-                  ),
-                ],
-              ),
-            );
-          } catch (e) {
-            print(e);
-            // unshowLoading(context: context);
-            await showDialog(
-              context: context,
-              builder: (context) => CupertinoAlertDialog(
-                title: Text("ERROR"),
-                content: Text('ไม่สามารถคืนจักรยานได้ กรุณาลองใหม่อีกครั้ง'),
-                actions: [
-                  CupertinoDialogAction(
-                    child: Text(
-                      'OK',
-                    ),
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true).pop('dialog');
-                    },
-                  ),
-                ],
-              ),
-            );
-          }
-        }
+        await returnHandle(barcode, currentPosition, bikeProvider);
       }
     } else {
       // pop loading
