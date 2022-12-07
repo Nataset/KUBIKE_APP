@@ -8,6 +8,7 @@ import 'package:kubike_app/page/bike_return.dart';
 import 'package:kubike_app/page/login.dart';
 import 'package:kubike_app/page/map.dart';
 import 'package:kubike_app/page/profile.dart';
+import 'package:kubike_app/page/setting.dart';
 import 'package:kubike_app/page/test.dart';
 import 'package:kubike_app/provider/bike_provider.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +22,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int index = 0;
-  var screens = [MapPage(), BikeReturnPage(), ProfilePage(), TestPage()];
+  var screens = [MapPage(), BikeReturnPage(), ProfilePage(), SettingPage()];
 
   @override
   Widget build(BuildContext context) {

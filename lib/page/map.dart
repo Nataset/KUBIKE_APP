@@ -48,9 +48,12 @@ class _MapPageState extends State<MapPage> {
     super.initState();
 
     _mapController = MapController();
-    _centerCurrentLocationStreamController = StreamController<double?>();
-    _positionStreamController = StreamController<LocationMarkerPosition>();
-    _headingStreamController = StreamController<LocationMarkerHeading>();
+    _centerCurrentLocationStreamController =
+        StreamController<double?>.broadcast();
+    _positionStreamController =
+        StreamController<LocationMarkerPosition>.broadcast();
+    _headingStreamController =
+        StreamController<LocationMarkerHeading>.broadcast();
     _centerOnLocationUpdate = CenterOnLocationUpdate.never;
     _lastPosition = context.read<MapLastLocationProvider>().lastPosition;
 
@@ -66,8 +69,6 @@ class _MapPageState extends State<MapPage> {
         _isLocationServiceEnabled = enable;
       });
     });
-
-    log('init state run');
   }
 
   @override
@@ -80,8 +81,6 @@ class _MapPageState extends State<MapPage> {
     _centerCurrentLocationStreamController.close();
 
     super.dispose();
-
-    log('dispose status run');
   }
 
   @override
@@ -600,7 +599,7 @@ class _MapPageState extends State<MapPage> {
 
   void _subscriptPositionStream() {
     _positionStreamSub?.cancel();
-    _positionStreamSub = Geolocator.getPositionStream().map(
+    _positionStreamSub = Geolocator.getPositionStream().asBroadcastStream().map(
       (Position position) {
         return LocationMarkerPosition(
           latitude: position.latitude,
@@ -621,6 +620,7 @@ class _MapPageState extends State<MapPage> {
   void _subscriptHeadingStream() {
     _headingStreamSub?.cancel();
     _headingStreamSub = FlutterCompass.events!
+        .asBroadcastStream()
         .where((CompassEvent compassEvent) => compassEvent.heading != null)
         .map((CompassEvent compassEvent) {
       return LocationMarkerHeading(
@@ -638,7 +638,6 @@ class _MapPageState extends State<MapPage> {
     _serviceStatusStream?.cancel();
     _serviceStatusStream = Geolocator.getServiceStatusStream().listen(
       (ServiceStatus status) {
-        log(status.toString());
         if (status == ServiceStatus.enabled) {
           log('Location service is enabled');
           checkLocationEnable().then((isEnable) {
