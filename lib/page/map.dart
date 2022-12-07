@@ -36,101 +36,49 @@ class _MapPageState extends State<MapPage> {
 
   late CenterOnLocationUpdate _centerOnLocationUpdate;
   late StreamController<double?> _centerCurrentLocationStreamController;
-  late StreamSubscription<ServiceStatus> _serviceStatusStream;
+  StreamSubscription<ServiceStatus>? _serviceStatusStream;
 
-  late Stream<LocationMarkerPosition> _positionStream;
-  late Stream<LocationMarkerHeading> _headingStream;
-  late StreamSubscription<LocationMarkerPosition> _positionStreamSub;
-  late StreamSubscription<LocationMarkerHeading> _headingStreamSub;
-
-  Future<bool> checkLocationEnable() async {
-    bool isEnable = false;
-    final result = await Future.wait(
-        [Geolocator.isLocationServiceEnabled(), Geolocator.checkPermission()]);
-
-    bool locationServiceEnabled = result[0] as bool;
-    LocationPermission locationPermissionStatus =
-        result[1] as LocationPermission;
-
-    if ((locationPermissionStatus == LocationPermission.always ||
-            locationPermissionStatus == LocationPermission.whileInUse) &&
-        locationServiceEnabled == true) {
-      isEnable = true;
-    }
-
-    return isEnable;
-  }
-
-  void fetchHubs() {
-    HubService.fetchHubs().then((hubs) {
-      if (mounted) {
-        if (hubs == null) {
-          setState(() {
-            _isError = true;
-          });
-        } else {
-          setState(() {
-            _hubs = hubs;
-          });
-        }
-      }
-    });
-  }
+  late StreamController<LocationMarkerPosition> _positionStreamController;
+  late StreamController<LocationMarkerHeading> _headingStreamController;
+  StreamSubscription<LocationMarkerPosition>? _positionStreamSub;
+  StreamSubscription<LocationMarkerHeading>? _headingStreamSub;
 
   @override
   void initState() {
     super.initState();
 
-    fetchHubs();
-
-    _lastPosition = context.read<MapLastLocationProvider>().lastPosition;
     _mapController = MapController();
-
-    _centerOnLocationUpdate = CenterOnLocationUpdate.never;
     _centerCurrentLocationStreamController = StreamController<double?>();
+    _positionStreamController = StreamController<LocationMarkerPosition>();
+    _headingStreamController = StreamController<LocationMarkerHeading>();
+    _centerOnLocationUpdate = CenterOnLocationUpdate.never;
+    _lastPosition = context.read<MapLastLocationProvider>().lastPosition;
 
+    _subscriptStatusStream();
+
+    fetchHubs();
     checkLocationEnable().then((enable) {
+      if (enable) {
+        _subscriptPositionStream();
+        _subscriptHeadingStream();
+      }
       setState(() {
         _isLocationServiceEnabled = enable;
       });
     });
-
-    _serviceStatusStream = Geolocator.getServiceStatusStream().listen(
-      (ServiceStatus status) {
-        log(status.toString());
-        if (status == ServiceStatus.enabled) {
-          log('Location service is enabled');
-          // checkLocationEnable().then((isEnable) {
-          setState(() {
-            _isLocationServiceEnabled = true;
-          });
-        } else {
-          log('Location service is disable');
-
-          setState(() {
-            _isLocationServiceEnabled = false;
-          });
-        }
-      },
-    );
-
-    _positionStream = Geolocator.getPositionStream().map(
-      (Position position) {
-        return LocationMarkerPosition(
-          latitude: position.latitude,
-          longitude: position.longitude,
-          accuracy: position.accuracy,
-        );
-      },
-    );
 
     log('init state run');
   }
 
   @override
   void dispose() {
+    _headingStreamSub?.cancel();
+    _positionStreamSub?.cancel();
     _serviceStatusStream?.cancel();
+    _headingStreamController.close();
+    _positionStreamController.close();
     _centerCurrentLocationStreamController.close();
+
     super.dispose();
 
     log('dispose status run');
@@ -498,26 +446,8 @@ class _MapPageState extends State<MapPage> {
             ),
             if (_isLocationServiceEnabled)
               CurrentLocationLayer(
-                positionStream: Geolocator.getPositionStream().map(
-                  (Position position) {
-                    return LocationMarkerPosition(
-                      latitude: position.latitude,
-                      longitude: position.longitude,
-                      accuracy: position.accuracy,
-                    );
-                  },
-                ),
-                headingStream: FlutterCompass.events!
-                    .where((CompassEvent compassEvent) =>
-                        compassEvent.heading != null)
-                    .map((CompassEvent compassEvent) {
-                  return LocationMarkerHeading(
-                      heading: degToRadian(compassEvent.heading!),
-                      accuracy: (compassEvent.accuracy ?? pi * 0.3).clamp(
-                        pi * 0.1,
-                        pi * 0.4,
-                      ));
-                }),
+                positionStream: _positionStreamController.stream,
+                headingStream: _headingStreamController.stream,
                 centerOnLocationUpdate: _centerOnLocationUpdate,
                 centerCurrentLocationStream:
                     _centerCurrentLocationStreamController.stream,
@@ -632,5 +562,105 @@ class _MapPageState extends State<MapPage> {
       ],
     );
     ;
+  }
+
+  Future<bool> checkLocationEnable() async {
+    bool isEnable = false;
+    final result = await Future.wait(
+        [Geolocator.isLocationServiceEnabled(), Geolocator.checkPermission()]);
+
+    bool locationServiceEnabled = result[0] as bool;
+    LocationPermission locationPermissionStatus =
+        result[1] as LocationPermission;
+
+    if ((locationPermissionStatus == LocationPermission.always ||
+            locationPermissionStatus == LocationPermission.whileInUse) &&
+        locationServiceEnabled == true) {
+      isEnable = true;
+    }
+
+    return isEnable;
+  }
+
+  void fetchHubs() {
+    HubService.fetchHubs().then((hubs) {
+      if (mounted) {
+        if (hubs == null) {
+          setState(() {
+            _isError = true;
+          });
+        } else {
+          setState(() {
+            _hubs = hubs;
+          });
+        }
+      }
+    });
+  }
+
+  void _subscriptPositionStream() {
+    _positionStreamSub?.cancel();
+    _positionStreamSub = Geolocator.getPositionStream().map(
+      (Position position) {
+        return LocationMarkerPosition(
+          latitude: position.latitude,
+          longitude: position.longitude,
+          accuracy: position.accuracy,
+        );
+      },
+    ).handleError((e) {
+      log('has Geolocator Error');
+      print(e);
+    }).listen(
+      (position) {
+        _positionStreamController.add(position);
+      },
+    );
+  }
+
+  void _subscriptHeadingStream() {
+    _headingStreamSub?.cancel();
+    _headingStreamSub = FlutterCompass.events!
+        .where((CompassEvent compassEvent) => compassEvent.heading != null)
+        .map((CompassEvent compassEvent) {
+      return LocationMarkerHeading(
+          heading: degToRadian(compassEvent.heading!),
+          accuracy: (compassEvent.accuracy ?? pi * 0.3).clamp(
+            pi * 0.1,
+            pi * 0.4,
+          ));
+    }).listen((event) {
+      _headingStreamController.add(event);
+    });
+  }
+
+  void _subscriptStatusStream() {
+    _serviceStatusStream?.cancel();
+    _serviceStatusStream = Geolocator.getServiceStatusStream().listen(
+      (ServiceStatus status) {
+        log(status.toString());
+        if (status == ServiceStatus.enabled) {
+          log('Location service is enabled');
+          checkLocationEnable().then((isEnable) {
+            if (isEnable) {
+              _subscriptPositionStream();
+              _subscriptHeadingStream();
+            }
+
+            setState(() {
+              _isLocationServiceEnabled = isEnable;
+            });
+          });
+        } else {
+          log('Location service is disable');
+          _positionStreamSub?.cancel();
+          _headingStreamSub?.cancel();
+
+          setState(() {
+            _isLocationServiceEnabled = false;
+          });
+        }
+      },
+    );
   }
 }
