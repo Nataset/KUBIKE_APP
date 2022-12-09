@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -77,6 +78,8 @@ class AuthService {
     final GoogleSignInAuthentication? googleAuth =
         await googleUser?.authentication;
     final googleToken = googleAuth?.accessToken;
+
+    log(googleAuth!.accessToken.toString());
 
     http.Response authPostRes;
 

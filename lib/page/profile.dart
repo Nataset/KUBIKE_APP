@@ -37,7 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              physics: const ScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -45,8 +45,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       height: 60,
                     ),
                     Container(
-                        height: 150,
-                        width: 150,
+                        height: 100,
+                        width: 100,
                         decoration: BoxDecoration(
                             shape: BoxShape.circle, color: Colors.grey[500]),
                         child: user?.profileImage != null
@@ -72,8 +72,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           borderRadius:
                               const BorderRadius.all(Radius.circular(15))),
                       padding: const EdgeInsets.only(
-                        top: 20,
-                        bottom: 20,
+                        top: 10,
+                        bottom: 10,
                       ),
                       margin: const EdgeInsets.only(left: 20, right: 20),
                       // color: Colors.red,
@@ -81,12 +81,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         Text(
                           user.name.split(' ')[0],
                           style: TextStyle(
-                              fontSize: 24,
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: AppColor.darkGreen),
                         ),
                         Container(
-                            margin: const EdgeInsets.only(bottom: 10, top: 10),
+                            margin: const EdgeInsets.only(bottom: 0, top: 0),
                             padding: const EdgeInsets.only(left: 30, right: 30),
                             child: Divider(
                               thickness: 2,
@@ -102,7 +102,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   Text(
                                     'Email',
                                     style: TextStyle(
-                                        fontSize: 18,
+                                        fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.grey[700]),
                                   ),
@@ -112,7 +112,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   Text(
                                     'Name',
                                     style: TextStyle(
-                                        fontSize: 18,
+                                        fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.grey[700]),
                                   ),
@@ -130,7 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   Text(
                                     user.email,
                                     style: const TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -140,7 +140,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   Text(
                                     user.name,
                                     style: const TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),

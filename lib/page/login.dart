@@ -66,127 +66,144 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage('assets/background.png'), fit: BoxFit.cover)),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Column(
+      body: Stack(
+        children: [
+          Column(
             children: [
               Container(
-                color: Colors.transparent,
-                alignment: Alignment.center,
-                // padding: const EdgeInsets.all(32),
-                margin: const EdgeInsets.only(bottom: 200),
-              ),
-              Expanded(
-                child: Container(
+                  height: 250,
                   decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30))),
-                  alignment: Alignment.topLeft,
-                  padding: const EdgeInsets.only(left: 40, right: 40),
-                  child: SingleChildScrollView(
-                      child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(
-                        height: 60,
-                      ),
-                      Text('login.welcome',
-                              style: GoogleFonts.kanit(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 32,
-                                  color: AppColor.darkGreen))
-                          .tr(),
-                      SizedBox(height: 16),
-                      Text(
-                        'login.welcomeDescribe',
-                        style: GoogleFonts.kanit(
-                            color: AppColor.darkGreen, fontSize: 16),
-                      ).tr(),
-                      const SizedBox(height: 60),
-                      OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              padding:
-                                  const EdgeInsets.only(top: 10, bottom: 10),
-                              side: BorderSide(color: AppColor.darkGreen),
-                              textStyle: const TextStyle(fontSize: 18),
-                              foregroundColor: AppColor.darkGreen),
-                          onPressed: () {
-                            googleSignInHandle(context: context);
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              const Icon(FontAwesomeIcons.google),
-                              const Text('login.loginGoogle').tr(),
-                              const SizedBox(
-                                width: 20,
-                              )
-                            ],
-                          )),
-                      const SizedBox(
-                        height: 25,
-                      ),
-                      Row(children: [
-                        Expanded(child: Divider(color: Colors.grey[600])),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10, right: 10),
-                          child: Text(
-                            "or",
-                            style: TextStyle(color: Colors.grey[500]),
-                          ),
-                        ),
-                        Expanded(child: Divider(color: Colors.grey[600])),
-                      ]),
-                      const SizedBox(
-                        height: 25,
-                      ),
-                      OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.grey[300],
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              padding:
-                                  const EdgeInsets.only(top: 10, bottom: 10),
-                              side: BorderSide(color: AppColor.darkGreen),
-                              textStyle: const TextStyle(fontSize: 18),
-                              foregroundColor: AppColor.darkGreen),
-                          onPressed: () {
-                            showAppDialog(
-                                context: context,
-                                title: 'Error',
-                                content: "this feature, still in development");
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              const Text('KU',
-                                  style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w900)),
-                              const Text('login.loginNontri').tr(),
-                              const SizedBox(
-                                width: 20,
-                              )
-                            ],
-                          )),
-                      const SizedBox(
-                        height: 25,
-                      ),
-                    ],
-                  )),
-                ),
-              ),
+                      image: DecorationImage(
+                          image: AssetImage('assets/background.png'),
+                          fit: BoxFit.cover))),
             ],
           ),
-        ),
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            body: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Column(
+                children: [
+                  Container(
+                    color: Colors.transparent,
+                    alignment: Alignment.center,
+                    // padding: const EdgeInsets.all(32),
+                    margin: const EdgeInsets.only(bottom: 200),
+                  ),
+                  Container(
+                    decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30))),
+                    alignment: Alignment.topLeft,
+                    padding: const EdgeInsets.only(left: 40, right: 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(
+                          height: 60,
+                        ),
+                        Text('login.welcome',
+                                style: GoogleFonts.kanit(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 32,
+                                    color: AppColor.darkGreen))
+                            .tr(),
+                        SizedBox(height: 16),
+                        Text(
+                          'login.welcomeDescribe',
+                          style: GoogleFonts.kanit(
+                              color: AppColor.darkGreen, fontSize: 16),
+                        ).tr(),
+                        const SizedBox(height: 60),
+                        OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                padding:
+                                    const EdgeInsets.only(top: 10, bottom: 10),
+                                side: BorderSide(color: AppColor.darkGreen),
+                                textStyle: const TextStyle(fontSize: 18),
+                                foregroundColor: AppColor.darkGreen),
+                            onPressed: () {
+                              googleSignInHandle(context: context);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 10),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  const Icon(FontAwesomeIcons.google),
+                                  const Text('login.loginGoogle').tr(),
+                                  const SizedBox(
+                                    width: 0,
+                                  )
+                                ],
+                              ),
+                            )),
+                        const SizedBox(
+                          height: 25,
+                        ),
+                        Row(children: [
+                          Expanded(child: Divider(color: Colors.grey[600])),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10, right: 10),
+                            child: Text(
+                              "or",
+                              style: TextStyle(color: Colors.grey[500]),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: Colors.grey[600])),
+                        ]),
+                        const SizedBox(
+                          height: 25,
+                        ),
+                        OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                                backgroundColor: Colors.grey[300],
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                padding:
+                                    const EdgeInsets.only(top: 10, bottom: 10),
+                                side: BorderSide(color: AppColor.darkGreen),
+                                textStyle: const TextStyle(fontSize: 18),
+                                foregroundColor: AppColor.darkGreen),
+                            onPressed: () {
+                              showAppDialog(
+                                  context: context,
+                                  title: 'Error',
+                                  content:
+                                      "this feature, still in development");
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.only(left: 10),
+                                  child: Text('KU',
+                                      style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w900)),
+                                ),
+                                const Text('login.loginNontri').tr(),
+                                const SizedBox(
+                                  width: 0,
+                                )
+                              ],
+                            )),
+                        const SizedBox(
+                          height: 60,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

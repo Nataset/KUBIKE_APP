@@ -2,6 +2,36 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+		<!-- Put me in the [my_project]/ios/Runner/Info.plist file -->
+		<!-- Google Sign-in Section -->
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<!-- TODO Replace this value: -->
+					<!-- Copied from GoogleService-Info.plist key REVERSED_CLIENT_ID -->
+					<string>com.googleusercontent.apps.932072781684-vrsuqe378v3fs7b8j3q9d5pd8iq82rii</string>
+				</array>
+			</dict>
+		</array>
+		<!-- End of the Google Sign-in Section -->
+
+		<!-- start Geolocator -->
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>This app needs access to location when open.</string>
+		<!-- end Geolocator -->
+
+		<!-- start QR Scanner -->
+		<key>io.flutter.embedded_views_preview</key>
+		<true/>
+		<key>NSCameraUsageDescription</key>
+		<string>This app needs camera access to scan QR codes</string>
+		<!-- end QR Scanner -->
+
+
 		<key>CFBundleLocalizations</key>
 		<array>
 			<string>en</string>

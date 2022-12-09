@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "932072781684",
+    "project_id": "ku-bike",
+    "storage_bucket": "ku-bike.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:932072781684:android:0ba5c53a2082409ea91e21",
+        "android_client_info": {
+          "package_name": "com.example.kubike_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "932072781684-p6uu41qq4jdd7st0q9db9qo6ev3d1gsu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATZuyPyrFiN7_Yi4PYm439UJi_l75Hhg4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "932072781684-p6uu41qq4jdd7st0q9db9qo6ev3d1gsu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "932072781684-vrsuqe378v3fs7b8j3q9d5pd8iq82rii.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.kubikeApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

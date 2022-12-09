@@ -30,7 +30,7 @@ class _BikeBorrowPageState extends State<BikeBorrowPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      height: 300,
+                      height: 250,
                       child: Center(
                         child: Text(
                           'bikeBorrow.notFound',
